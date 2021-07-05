@@ -7,7 +7,9 @@ target_include_directories(${PROJECT_NAME}Cast3MBindings-c
    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/bindings/castem/include>
    $<INSTALL_INTERFACE:include>)
 target_link_libraries(${PROJECT_NAME}Cast3MBindings-c PUBLIC ${PROJECT_NAME})
-target_link_libraries(${PROJECT_NAME}Cast3MBindings-c PRIVATE dl)
+if(NOT WIN32)
+  target_link_libraries(${PROJECT_NAME}Cast3MBindings-c PRIVATE dl)
+endif(NOT WIN32)
 
 # main fortran library
 

@@ -3,14 +3,11 @@ include(cmake/modules/mechhano.cmake)
 project(mechhcano
         VERSION 0.0.1
         DESCRIPTION "C++ implementation of the Hybrid High Order method"
-        HOMEPAGE_URL "https://github.com/davidsiedel/mechhano-0"
-        LANGUAGES CXX)
+        LANGUAGES CXX Fortran)
 
 cmake_minimum_required(VERSION 3.10)
 set(CMAKE_CXX_STANDARD 17)
 set(CXX_STANDARD_REQUIRED ON)
-
-enable_language (Fortran)
 
 
 #compiler options
