@@ -12,8 +12,10 @@ target_link_libraries(${PROJECT_NAME}Cast3MBindings-c PRIVATE dl)
 # main fortran library
 
 mechhano_library(${PROJECT_NAME}Cast3MBindings SHARED
-  castem_hho_fortran_utilities.f95
-  castem_hho.f95)
+  		castem_hho_fortran_utilities.f95
+#  castem_hho.f95
+		b.f95
+		)
 set_target_properties(${PROJECT_NAME}Cast3MBindings
   PROPERTIES Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/bindings/castem/modules")
 target_include_directories(${PROJECT_NAME}Cast3MBindings
@@ -25,6 +27,7 @@ target_link_libraries(${PROJECT_NAME}Cast3MBindings
 # library containing a set of predefined elements
  
 mechhano_library(${PROJECT_NAME}Cast3MElements
-    Triangle.cxx)
+    Triangle.cxx
+	Quadrangle.cxx)
 target_link_libraries(${PROJECT_NAME}Cast3MElements
 	PUBLIC ${PROJECT_NAME}Cast3MBindings-c)

@@ -1,4 +1,4 @@
-subroutine test()
+subroutine test(tabflo)
   use castem_hho
   use iso_fortran_env
   implicit none
@@ -9,6 +9,8 @@ subroutine test()
   double precision, dimension (:), allocatable :: ewk
 !  double precision, dimension (1) :: swk
   double precision, dimension (50) :: gradients
+!  integer(c_int64_t), dimension (3), target :: tabflo = (/ 2, 2, 2 /)
+  integer(c_int64_t), dimension (:), target, intent (inout) :: tabflo
   double precision, dimension (6) :: gauss_pts
   double precision, dimension (3) :: gauss_wts
   double precision, dimension (200) :: ufaces
@@ -22,7 +24,8 @@ subroutine test()
   eg % dim_eucli = 2
   eg % num_vertices = 3
   eg % num_faces = 3
-  allocate ( eg % num_vertices_per_face (3) )
+!  allocate ( eg % num_vertices_per_face (3) )
+  eg % num_vertices_per_face = tabflo
   allocate ( eg % connectivity (6) )
   allocate ( eg % vertices_coordinates (6) )
   eg % num_vertices_per_face = (/ 2, 2, 2 /)
@@ -71,13 +74,19 @@ subroutine test()
   !   DEALLOCATE( path )
 
 
-  deallocate( eg % num_vertices_per_face)
+!  deallocate( eg % num_vertices_per_face)
   deallocate( eg % connectivity)
   deallocate( eg % vertices_coordinates)
   deallocate( ewk )
 end subroutine test
 
 program main
-  call test()
+!  use, intrinsic :: iso_c_binding, only: c_int64_t, c_int, c_ptr, c_funptr, c_char, c_null_ptr, c_loc
+  use, intrinsic :: iso_c_binding, only: c_int64_t
+  use, intrinsic :: iso_fortran_env, only: int64
+!  use castem_hho_fortran_utilities
+  integer(c_int64_t), dimension (3) :: tabflo = (/ 2, 2, 2 /)
+!  trouver un pointeur sur tavflo et pointer vers taflo en tant qu'argument de test()
+!  call test(tabflo)
 end program main
 

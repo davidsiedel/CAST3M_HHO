@@ -7,20 +7,12 @@ module castem_hho
         integer(c_int64_t) :: dim_eucli
         integer(c_int64_t) :: num_vertices
         integer(c_int64_t) :: num_faces
+!        integer(c_int64_t), dimension (:), pointer :: num_vertices_per_face
         integer(c_int64_t), dimension (:), pointer :: num_vertices_per_face
+!        integer(c_int64_t), dimension (20) :: num_vertices_per_face
         integer(c_int64_t), dimension (:), pointer :: connectivity
         double precision, dimension (:), pointer :: vertices_coordinates
     end type ElementGeometry
-    !
-    type :: ElementComputation
-        double precision stabilization_parameter
-        double precision, dimension (:), pointer :: face_displacement_values
-        double precision, dimension (:), pointer :: gradient_values
-        double precision, dimension (:), pointer :: stress_values
-        double precision, dimension (:), pointer :: tangent_operator_values
-        double precision, dimension (:), pointer :: element_matrix_values
-        double precision, dimension (:), pointer :: element_residual_values
-    end type ElementComputation
     !
     type :: ElementQuadrature
         integer(c_int64_t) :: num_cell_quadrature_points

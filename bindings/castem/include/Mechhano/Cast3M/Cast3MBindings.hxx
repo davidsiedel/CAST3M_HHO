@@ -87,7 +87,30 @@ extern "C" {
             const castem_hho_element_geometry *const
     );
 
+    typedef castem_hho_status (*castem_hho_print_description_ptr)(
+            const castem_hho_element_geometry *const
+    );
+
+    /*!
+    * \brief generic element description
+    *
+    */
+    struct castem_hho_generic_element_description {
+        int64_t element_workspace_size; // OUTPUT : size of the element workspace containing operators data
+        int64_t dim_eucli_cell; // OUTPUT : size of the element workspace containing operators data
+        int64_t dim_eucli_face; // OUTPUT : size of the element workspace containing operators data
+        int64_t num_cell_quadrature_points; // OUTPUT : size of the element workspace containing operators data
+        int64_t num_face_quadrature_points; // OUTPUT : size of the element workspace containing operators data
+        int64_t element_size; // OUTPUT : size of the element workspace containing operators data
+        int64_t face_size; // OUTPUT : size of the element workspace containing operators data
+    };
+
     struct castem_hho_element_description {
+//        int64_t cell_basis_size;
+//        int64_t face_basis_size;
+//        int64_t element_operators_workspace_size; -> stockage des matrices B et stabilisation
+//        int64_t element_internal_workspace_size;
+//        int64_t element_internal_workspace_size;
         int64_t element_workspace_size;
         int64_t num_cell_quadrature_points;
         int64_t element_size;
