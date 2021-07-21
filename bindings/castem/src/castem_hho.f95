@@ -1,325 +1,302 @@
 module castem_hho
-  use, intrinsic :: iso_c_binding, only: c_int64_t, c_int, c_ptr, c_funptr, c_char, c_null_ptr, c_loc
-  use, intrinsic :: iso_fortran_env, only: int64
-  use castem_hho_fortran_utilities
-  !
-  type :: ElementGeometry
-     integer(c_int64_t) :: dim_eucli
-     integer(c_int64_t) :: num_vertices
-     integer(c_int64_t) :: num_faces
-     integer(c_int64_t), dimension (:), pointer :: num_vertices_per_face
-     integer(c_int64_t), dimension (:), pointer :: connectivity
-     double precision, dimension (:), pointer :: vertices_coordinates
-  end type ElementGeometry
-  !
-  type, bind(c) :: ElementDescription
-     integer(c_int64_t) element_workspace_size
-     integer(c_int64_t) num_cell_quadrature_points
-     integer(c_int64_t) element_size
-     integer(c_int64_t) face_size
-     type(c_funptr) get_gauss_data
-     type(c_funptr) initialize_workspace
-     type(c_funptr) compute_gradients
-     type(c_funptr) compute_internal_forces
-     type(c_funptr) compute_system
-  end type ElementDescription
-  !
-  type, bind(c) :: CElementGeometry
-     integer(c_int64_t) :: dim_eucli
-     integer(c_int64_t) :: num_vertices
-     integer(c_int64_t) :: num_faces
-     type(c_ptr) :: num_vertices_per_face
-     type(c_ptr) :: connectivity
-     type(c_ptr) :: vertices_coordinates
-  end type CElementGeometry
-  ! enumeration
-  enum , bind(c) 
-     enumerator :: CASTEM_HHO_SUCCESS = 0
-     enumerator :: CASTEM_HHO_FAILURE = 1
-  end enum
-  type, bind(c) :: ExitStatus
-     integer(c_int) :: ExitStatus
-     type(c_ptr) :: msg = c_null_ptr
-  end type ExitStatus
-  interface
-     function report_success() bind(c,name = 'castem_hho_report_success') result(r)
-       import ExitStatus
-       implicit none
-       type(ExitStatus) :: r
-     end function report_success
-  end interface
-  !
+    use, intrinsic :: iso_c_binding, only: c_int64_t, c_int, c_ptr, c_funptr, c_char, c_null_ptr, c_loc
+    use, intrinsic :: iso_fortran_env, only: int64
+    use castem_hho_fortran_utilities
+    !
+    !! Maximum Number of Vertices for a face (3D)/an edge (2D) of a HHO cell
+    !! (must be consistent with the same variable in C3m include CCHHOPR.INC)
+    integer(c_int64_t), parameter :: nfhmax = 20
+    !
+    type, bind(c) :: ElementGeometry
+        integer(c_int64_t), dimension(nfhmax * 2) :: connectivity
+        double precision, dimension(nfhmax * 2) :: vertices_coordinates
+    end type ElementGeometry
+    !
+    type, bind(c) :: ElementDescription
+        integer(c_int64_t) :: dim_eucli
+        integer(c_int64_t) :: num_vertices
+        integer(c_int64_t) :: num_faces
+        integer(c_int64_t), dimension(nfhmax) :: num_vertices_per_face
+        integer(c_int64_t) :: num_quadrature_points
+        integer(c_int64_t) :: dir_dof_face_unknown
+        integer(c_int64_t) :: dir_dof_cell_unknown
+        integer(c_int64_t) :: dir_dof_gradient
+        !!        integer(c_int64_t) :: dim_gradient     !! Always 9
+        integer(c_int64_t) :: dim_field          !! = dim_eucli for mechanics (= 1 for phase-field or thermics)
+        integer(c_int64_t) :: dim_space_element  !! dim_field * (dir_dof_face_unknown * num_faces + dir_dof_cell_unknown)
+        integer(c_int64_t) :: dim_face_block     !! dim_field * (dir_dof_face_unknown * num_faces)
+        integer(c_int64_t) :: dim_cell_block     !! dim_field * (dir_dof_cell_unknown)
+        integer(c_int64_t) :: dim_MB             !! dim.Matri9, dim_space_element)
+        integer(c_int64_t) :: dim_MB_matrices    !! dim_MB * num_quadrature_points
+        integer(c_int64_t) :: dim_MSTAB          !! dim.matridim_space_element,dim_space_element)
+        integer(c_int64_t) :: dim_MKCC           !! dim.Matridim_cell_block,dim_cell_block)
+        integer(c_int64_t) :: dim_MKCF           !! dim.Matridim_cell_block,dim_face_block)
+        integer(c_int64_t) :: dim_MVC            !! dim.Vector(dim_cell_block) [Vector(.) = Matri1,.)]
+    end type ElementDescription
+    !
+    type, bind(c) :: ElementFunctions
+        type(c_funptr) get_gradient_operator
+        type(c_funptr) get_stabilization_operator
+        type(c_funptr) get_gauss_weight
+        type(c_funptr) get_gauss_point
+    end type ElementFunctions
+    !
+    type, bind(c) :: GenericFunctions
+        type(c_funptr) invert_matrix
+    end type GenericFunctions
+    ! enumeration
+    enum , bind(c)
+        enumerator :: CASTEM_HHO_SUCCESS = 0
+        enumerator :: CASTEM_HHO_FAILURE = 1
+    end enum
+    type, bind(c) :: ExitStatus
+        integer(c_int) :: ExitStatus
+        type(c_ptr) :: msg = c_null_ptr
+    end type ExitStatus
+    interface
+        function report_success() bind(c,name = 'castem_hho_report_success') result(r)
+            import ExitStatus
+            implicit none
+            type(ExitStatus) :: r
+        end function report_success
+    end interface
+    !
 contains
-  !
-  function convert_element_geometry(d) result(r)
-    implicit none
-    type(ElementGeometry), intent(in) :: d
-    type(CElementGeometry) :: r
-    r % dim_eucli = d % dim_eucli
-    r % num_vertices = d % num_vertices
-    r % num_faces = d % num_faces
-    r % num_vertices_per_face = c_loc(d % num_vertices_per_face)
-    r % connectivity = c_loc(d % connectivity)
-    r % vertices_coordinates = c_loc(d % vertices_coordinates)
-  end function convert_element_geometry
-  !
-  function report_failure(msg) result(r)
-    use, intrinsic :: iso_c_binding, only: c_ptr, c_char, c_loc
-    implicit none
-    interface
-       function report_failure_wrapper(msg) bind(c,name = 'castem_hho_report_failure') result(r)
-         import ExitStatus, c_ptr, c_char
-         implicit none
-         character(len=1,kind=c_char), dimension(*), intent(in) :: msg
-         type(ExitStatus) :: r
-       end function report_failure_wrapper
-    end interface
-    character(len=*), intent(in) :: msg
-    type(ExitStatus) :: r
-    character(len=1,kind=c_char) :: s(len(msg)+1)
-    s = convert_fortran_string(msg)
-    r = report_failure_wrapper(s)
-  end function report_failure
-  !
-  function get_error_message(s) result(msg)
-    implicit none
-    type(ExitStatus) :: s
-    character(len=:), allocatable :: msg
-    msg = convert_c_string(s%msg)
-  end function get_error_message
-  !
-  function print_element_description(gd) result(r)
-    implicit none
-    interface
-       function print_element_description_wrapper(gd) &
-            bind(c,name = 'castem_hho_print_element_geometry') &
-            result(r)
-         import CElementGeometry, ExitStatus
-         implicit none
-         type(CElementGeometry), intent(in) :: gd
-         type(ExitStatus) :: r
-       end function print_element_description_wrapper
-    end interface
-    type(ElementGeometry), intent(in) :: gd
-    type(ExitStatus) :: r
-    r = print_element_description_wrapper(convert_element_geometry(gd))
-  end function print_element_description
-  !
-  function get_element_description(e, l, f, d) result(r)
-    use, intrinsic :: iso_c_binding, only: c_loc
-    implicit none
-    interface
-       function get_element_description_wrapper(e, l, f, d) &
-            bind(c,name = 'castem_hho_get_element_description') &
-            result(r)
-         use, intrinsic :: iso_c_binding, only: c_char
-         import ElementDescription, CElementGeometry, ExitStatus
-         implicit none
-         type(ElementDescription), intent(out):: e
-         character(len=1,kind=c_char), dimension(*), intent(in) :: l
-         character(len=1,kind=c_char), dimension(*), intent(in) :: f
-         type(CElementGeometry), intent(in) :: d
-         type(ExitStatus) :: r
-       end function get_element_description_wrapper
-    end interface
-    type(ElementDescription), intent(out):: e
-    character(len=*), intent(in) :: l
-    character(len=*), intent(in) :: f
-    type(ElementGeometry), intent(in) :: d
-    type(ExitStatus) :: r
-    r = get_element_description_wrapper(e, &
-         convert_fortran_string(l), &
-         convert_fortran_string(f), &
-         convert_element_geometry(d))
-  end function get_element_description
-  !
-!  function compute_gradients(g, ed, eg, ewk, swk, ufaces) result(r)
-!    use, intrinsic :: iso_c_binding, only: c_loc
-!    implicit none
-!    interface
-!       function compute_gradients_wrapper(g , ed, eg, ewk, swk, ufaces) &
-!            bind(c,name = 'castem_hho_compute_gradients') &
-!            result(r)
-!         use, intrinsic :: iso_c_binding, only: c_ptr
-!         import ElementDescription, CElementGeometry, ExitStatus
-!         implicit none
-!         type(c_ptr), intent(in), value :: g
-!         type(ElementDescription), intent(in):: ed
-!         type(CElementGeometry), intent(in) :: eg
-!         type(c_ptr), intent(in), value :: ewk
-!         type(c_ptr), intent(in), value :: swk
-!         type(c_ptr), intent(in), value :: ufaces
-!         type(ExitStatus) :: r
-!       end function compute_gradients_wrapper
-!    end interface
-!    double precision, dimension (:), target :: g;
-!    type(ElementDescription), intent(in) :: ed
-!    type(ElementGeometry), intent(in) :: eg
-!    double precision, dimension (:), target :: ewk;
-!    double precision, dimension (:), target :: swk;
-!    double precision, dimension (:), target :: ufaces;
-!    type(ExitStatus) :: r
-!    r = compute_gradients_wrapper(c_loc(g), ed, &
-!         convert_element_geometry(eg), &
-!         c_loc(ewk), c_loc(swk), c_loc(ufaces))
-!  end function compute_gradients
     !
-    function initialize_workspace(ed, ewk, eg) result(r)
+    function report_failure(msg) result(r)
+        use, intrinsic :: iso_c_binding, only: c_ptr, c_char, c_loc
+        implicit none
+        interface
+            function report_failure_wrapper(msg) bind(c,name = 'castem_hho_report_failure') result(r)
+                import ExitStatus, c_ptr, c_char
+                implicit none
+                character(len=1,kind=c_char), dimension(*), intent(in) :: msg
+                type(ExitStatus) :: r
+            end function report_failure_wrapper
+        end interface
+        character(len=*), intent(in) :: msg
+        type(ExitStatus) :: r
+        character(len=1,kind=c_char) :: s(len(msg)+1)
+        s = convert_fortran_string(msg)
+        r = report_failure_wrapper(s)
+    end function report_failure
+    !
+    function get_error_message(s) result(msg)
+        implicit none
+        type(ExitStatus) :: s
+        character(len=:), allocatable :: msg
+        msg = convert_c_string(s%msg)
+    end function get_error_message
+    ! ------------------------------------------------------------------------------------------------------------------
+    ! BUILD ELEEMNT DESCRIPTION OBJECT
+    ! ------------------------------------------------------------------------------------------------------------------
+    function get_element_description(elem_desc, l, f) result(r)
         use, intrinsic :: iso_c_binding, only: c_loc
         implicit none
         interface
-            function compute_gradients_wrapper(ed, ewk, eg) &
-                    bind(c,name = 'castem_hho_initialize_workspace') &
+            function get_element_description_wrapper(elem_desc, l, f) &
+                    bind(c,name = 'castem_hho_get_element_description') &
                             result(r)
-                use, intrinsic :: iso_c_binding, only: c_ptr
-                import ElementDescription, CElementGeometry, ExitStatus
+                use, intrinsic :: iso_c_binding, only: c_char
+                import ElementDescription, ExitStatus
                 implicit none
-                type(ElementDescription), intent(in):: ed
-                type(c_ptr), intent(in), value :: ewk
-                type(CElementGeometry), intent(in) :: eg
+                type(ElementDescription), intent(out):: elem_desc
+                character(len=1,kind=c_char), dimension(*), intent(in) :: l
+                character(len=1,kind=c_char), dimension(*), intent(in) :: f
                 type(ExitStatus) :: r
-            end function compute_gradients_wrapper
+            end function get_element_description_wrapper
         end interface
-        type(ElementDescription), intent(in) :: ed
-        double precision, dimension (:), target :: ewk;
-        type(ElementGeometry), intent(in) :: eg
+        type(ElementDescription), intent(out):: elem_desc
+        character(len=*), intent(in) :: l
+        character(len=*), intent(in) :: f
         type(ExitStatus) :: r
-        r = compute_gradients_wrapper(ed, c_loc(ewk), convert_element_geometry(eg))
-    end function initialize_workspace
-    !
-    function get_gauss_data(ed, pts, wts, eg) result(r)
+        r = get_element_description_wrapper(elem_desc, &
+                convert_fortran_string(l), &
+                convert_fortran_string(f))
+    end function get_element_description
+    ! ------------------------------------------------------------------------------------------------------------------
+    ! BUILD ELEMENT FUNCTIONS OBJECT
+    ! ------------------------------------------------------------------------------------------------------------------
+    function get_element_functions(elem_funs, l, f) result(r)
         use, intrinsic :: iso_c_binding, only: c_loc
         implicit none
         interface
-            function compute_gradients_wrapper(ed, pts, wts, eg) &
-                    bind(c,name = 'castem_hho_get_gauss_data') &
+            function get_element_functions_wrapper(elem_funs, l, f) &
+                    bind(c,name = 'castem_hho_get_element_functions') &
                             result(r)
-                use, intrinsic :: iso_c_binding, only: c_ptr
-                import ElementDescription, CElementGeometry, ExitStatus
+                use, intrinsic :: iso_c_binding, only: c_char
+                import ElementFunctions, ExitStatus
                 implicit none
-                type(ElementDescription), intent(in):: ed
-                type(c_ptr), intent(in), value :: pts
-                type(c_ptr), intent(in), value :: wts
-                type(CElementGeometry), intent(in) :: eg
+                type(ElementFunctions), intent(out):: elem_funs
+                character(len=1,kind=c_char), dimension(*), intent(in) :: l
+                character(len=1,kind=c_char), dimension(*), intent(in) :: f
                 type(ExitStatus) :: r
-            end function compute_gradients_wrapper
+            end function get_element_functions_wrapper
         end interface
-        type(ElementDescription), intent(in) :: ed
-        double precision, dimension (:), target :: pts;
-        double precision, dimension (:), target :: wts;
-        type(ElementGeometry), intent(in) :: eg
+        type(ElementFunctions), intent(out):: elem_funs
+        character(len=*), intent(in) :: l
+        character(len=*), intent(in) :: f
         type(ExitStatus) :: r
-        r = compute_gradients_wrapper(ed, c_loc(pts), c_loc(wts), convert_element_geometry(eg))
-    end function get_gauss_data
-    !
-    function compute_gradients(ed, ewk, g, ufaces, eg) result(r)
+        r = get_element_functions_wrapper(elem_funs, &
+                convert_fortran_string(l), &
+                convert_fortran_string(f))
+    end function get_element_functions
+    ! ------------------------------------------------------------------------------------------------------------------
+    ! BUILD GENERIC FUNCTIONS OBJECT
+    ! ------------------------------------------------------------------------------------------------------------------
+    function get_generic_functions(gene_funs, l, f) result(r)
         use, intrinsic :: iso_c_binding, only: c_loc
         implicit none
         interface
-            function compute_gradients_wrapper(ed, ewk, g, ufaces, eg) &
-                    bind(c,name = 'castem_hho_compute_gradients') &
+            function get_generic_functions_wrapper(gene_funs, l, f) &
+                    bind(c,name = 'castem_hho_get_generic_functions') &
                             result(r)
-                use, intrinsic :: iso_c_binding, only: c_ptr
-                import ElementDescription, CElementGeometry, ExitStatus
+                use, intrinsic :: iso_c_binding, only: c_char
+                import GenericFunctions, ExitStatus
                 implicit none
-                type(ElementDescription), intent(in):: ed
-                type(c_ptr), intent(in), value :: ewk
-                type(c_ptr), intent(in), value :: g
-                type(c_ptr), intent(in), value :: ufaces
-                type(CElementGeometry), intent(in) :: eg
+                type(GenericFunctions), intent(out):: gene_funs
+                character(len=1,kind=c_char), dimension(*), intent(in) :: l
+                character(len=1,kind=c_char), dimension(*), intent(in) :: f
                 type(ExitStatus) :: r
-            end function compute_gradients_wrapper
+            end function get_generic_functions_wrapper
         end interface
-        type(ElementDescription), intent(in) :: ed
-        double precision, dimension (:), target :: ewk;
-        double precision, dimension (:), target :: g;
-        double precision, dimension (:), target :: ufaces;
-        type(ElementGeometry), intent(in) :: eg
+        type(GenericFunctions), intent(out):: gene_funs
+        character(len=*), intent(in) :: l
+        character(len=*), intent(in) :: f
         type(ExitStatus) :: r
-        r = compute_gradients_wrapper(ed, c_loc(ewk), c_loc(g), c_loc(ufaces), convert_element_geometry(eg))
-    end function compute_gradients
-    !
-    function compute_internal_forces(ed, ewk, out, in1, in2, eg) result(r)
+        r = get_generic_functions_wrapper(gene_funs, &
+                convert_fortran_string(l), &
+                convert_fortran_string(f))
+    end function get_generic_functions
+    ! ------------------------------------------------------------------------------------------------------------------
+    ! COMPUTE GRADIENT OPERATOR AT A SINGLE GAUSS POINT (INDEXED I)
+    ! ------------------------------------------------------------------------------------------------------------------
+    function get_gradient_operator(elem_funs, elem_geom, data, index) result(r)
+        use, intrinsic :: iso_c_binding, only: c_loc, c_int64_t
+        implicit none
+        interface
+            function get_gradient_operator_wrapper(elem_funs, elem_geom, data, index) &
+                    bind(c,name = 'castem_hho_get_gradient_operator') &
+                            result(r)
+                use, intrinsic :: iso_c_binding, only: c_ptr, c_int64_t
+                import ElementFunctions, ExitStatus, ElementGeometry
+                implicit none
+                type(ElementFunctions), intent(in) :: elem_funs
+                type(ElementGeometry), intent(in) :: elem_geom
+                type(c_ptr), intent(in), value :: data
+                integer(c_int64_t), intent(in), value :: index
+                type(ExitStatus) :: r
+            end function get_gradient_operator_wrapper
+        end interface
+        type(ElementFunctions), intent(in) :: elem_funs
+        double precision, dimension (:), target :: data
+        type(ElementGeometry), intent(in) :: elem_geom
+        integer(c_int64_t), intent(in) :: index
+        type(ExitStatus) :: r
+        r = get_gradient_operator_wrapper(elem_funs, elem_geom, c_loc(data), index)
+    end function get_gradient_operator
+    ! ------------------------------------------------------------------------------------------------------------------
+    ! COMPUTE GAUSS WEIGHT AT A SINGLE GAUSS POINT (INDEXED I)
+    ! ------------------------------------------------------------------------------------------------------------------
+    function get_gauss_weight(elem_funs, elem_geom, data, index) result(r)
+        use, intrinsic :: iso_c_binding, only: c_loc, c_int64_t
+        implicit none
+        interface
+            function get_gauss_weight_wrapper(elem_funs, elem_geom, data, index) &
+                    bind(c,name = 'castem_hho_get_gauss_weight') &
+                            result(r)
+                use, intrinsic :: iso_c_binding, only: c_ptr, c_int64_t
+                import ElementFunctions, ExitStatus, ElementGeometry
+                implicit none
+                type(ElementFunctions), intent(in) :: elem_funs
+                type(ElementGeometry), intent(in) :: elem_geom
+                type(c_ptr), intent(in), value :: data
+                integer(c_int64_t), intent(in), value :: index
+                type(ExitStatus) :: r
+            end function get_gauss_weight_wrapper
+        end interface
+        type(ElementFunctions), intent(in) :: elem_funs
+        double precision, dimension (:), target :: data;
+        type(ElementGeometry), intent(in) :: elem_geom
+        integer(c_int64_t), intent(in) :: index
+        type(ExitStatus) :: r
+        r = get_gauss_weight_wrapper(elem_funs, elem_geom, c_loc(data), index)
+    end function get_gauss_weight
+    ! ------------------------------------------------------------------------------------------------------------------
+    ! COMPUTE GAUSS POINT AT A SINGLE GAUSS POINT (INDEXED I)
+    ! ------------------------------------------------------------------------------------------------------------------
+    function get_gauss_point(elem_funs, elem_geom, data, index) result(r)
+        use, intrinsic :: iso_c_binding, only: c_loc, c_int64_t
+        implicit none
+        interface
+            function get_gauss_point_wrapper(elem_funs, elem_geom, data, index) &
+                    bind(c,name = 'castem_hho_get_gauss_point') &
+                            result(r)
+                use, intrinsic :: iso_c_binding, only: c_ptr, c_int64_t
+                import ElementFunctions, ExitStatus, ElementGeometry
+                implicit none
+                type(ElementFunctions), intent(in) :: elem_funs
+                type(ElementGeometry), intent(in) :: elem_geom
+                type(c_ptr), intent(in), value :: data
+                integer(c_int64_t), intent(in), value :: index
+                type(ExitStatus) :: r
+            end function get_gauss_point_wrapper
+        end interface
+        type(ElementFunctions), intent(in) :: elem_funs
+        double precision, dimension (:), target :: data;
+        type(ElementGeometry), intent(in) :: elem_geom
+        integer(c_int64_t), intent(in) :: index
+        type(ExitStatus) :: r
+        r = get_gauss_point_wrapper(elem_funs, elem_geom, c_loc(data), index)
+    end function get_gauss_point
+    ! ------------------------------------------------------------------------------------------------------------------
+    ! COMPUTE STABILIZATION OPERATOR
+    ! ------------------------------------------------------------------------------------------------------------------
+    function get_stabilization_operator(elem_funs, elem_geom, data) result(r)
         use, intrinsic :: iso_c_binding, only: c_loc
         implicit none
         interface
-            function compute_gradients_wrapper(ed, ewk, out, in1, in2, eg) &
-                    bind(c,name = 'castem_hho_compute_internal_forces') &
+            function get_stabilization_operator_wrapper(elem_funs, elem_geom, data) &
+                    bind(c,name = 'castem_hho_get_stabilization_operator') &
                             result(r)
                 use, intrinsic :: iso_c_binding, only: c_ptr
-                import ElementDescription, CElementGeometry, ExitStatus
+                import ElementFunctions, ExitStatus, ElementGeometry
                 implicit none
-                type(ElementDescription), intent(in):: ed
-                type(c_ptr), intent(in), value :: ewk
-                type(c_ptr), intent(in), value :: out
-                type(c_ptr), intent(in), value :: in1
-                type(c_ptr), intent(in), value :: in2
-                type(CElementGeometry), intent(in) :: eg
+                type(ElementFunctions), intent(in) :: elem_funs
+                type(ElementGeometry), intent(in) :: elem_geom
+                type(c_ptr), intent(in), value :: data
                 type(ExitStatus) :: r
-            end function compute_gradients_wrapper
+            end function get_stabilization_operator_wrapper
         end interface
-        type(ElementDescription), intent(in) :: ed
-        double precision, dimension (:), target :: ewk;
-        double precision, dimension (:), target :: out;
-        double precision, dimension (:), target :: in1;
-        double precision, dimension (:), target :: in2;
-        type(ElementGeometry), intent(in) :: eg
+        type(ElementFunctions), intent(in) :: elem_funs
+        double precision, dimension (:), target :: data
+        type(ElementGeometry), intent(in) :: elem_geom
         type(ExitStatus) :: r
-        r = compute_gradients_wrapper(ed, c_loc(ewk), c_loc(out), c_loc(in1), c_loc(in2), convert_element_geometry(eg))
-    end function compute_internal_forces
-    !
-    function compute_system(ed, ewk, out, in1, in2, eg) result(r)
-        use, intrinsic :: iso_c_binding, only: c_loc
+        r = get_stabilization_operator_wrapper(elem_funs, elem_geom, c_loc(data))
+    end function get_stabilization_operator
+    ! ------------------------------------------------------------------------------------------------------------------
+    ! INVERT MATRIX
+    ! ------------------------------------------------------------------------------------------------------------------
+    function invert_matrix(gene_funs, data, index) result(r)
+        use, intrinsic :: iso_c_binding, only: c_loc, c_int64_t
         implicit none
         interface
-            function compute_gradients_wrapper(ed, ewk, out, in1, in2, eg) &
-                    bind(c,name = 'castem_hho_compute_system') &
+            function invert_matrix_wrapper(gene_funs, data, index) &
+                    bind(c,name = 'castem_hho_invert_matrix') &
                             result(r)
-                use, intrinsic :: iso_c_binding, only: c_ptr
-                import ElementDescription, CElementGeometry, ExitStatus
+                use, intrinsic :: iso_c_binding, only: c_ptr, c_int64_t
+                import ExitStatus, GenericFunctions
                 implicit none
-                type(ElementDescription), intent(in):: ed
-                type(c_ptr), intent(in), value :: ewk
-                type(c_ptr), intent(in), value :: out
-                type(c_ptr), intent(in), value :: in1
-                type(c_ptr), intent(in), value :: in2
-                type(CElementGeometry), intent(in) :: eg
+                type(GenericFunctions), intent(in) :: gene_funs
+                type(c_ptr), intent(in), value :: data
+                integer(c_int64_t), intent(in), value :: index
                 type(ExitStatus) :: r
-            end function compute_gradients_wrapper
+            end function invert_matrix_wrapper
         end interface
-        type(ElementDescription), intent(in) :: ed
-        double precision, dimension (:), target :: ewk;
-        double precision, dimension (:), target :: out;
-        double precision, dimension (:), target :: in1;
-        double precision, dimension (:), target :: in2;
-        type(ElementGeometry), intent(in) :: eg
+        type(GenericFunctions), intent(in) :: gene_funs
+        double precision, dimension (:), target :: data;
+        integer(c_int64_t), intent(in) :: index
         type(ExitStatus) :: r
-        r = compute_gradients_wrapper(ed, c_loc(ewk), c_loc(out), c_loc(in1), c_loc(in2), convert_element_geometry(eg))
-    end function compute_system
-    !
-    function decondensate(ed, ewk, in1, eg) result(r)
-        use, intrinsic :: iso_c_binding, only: c_loc
-        implicit none
-        interface
-            function compute_gradients_wrapper(ed, ewk, in1, eg) &
-                    bind(c,name = 'castem_hho_decondensate') &
-                            result(r)
-                use, intrinsic :: iso_c_binding, only: c_ptr
-                import ElementDescription, CElementGeometry, ExitStatus
-                implicit none
-                type(ElementDescription), intent(in):: ed
-                type(c_ptr), intent(in), value :: ewk
-                type(c_ptr), intent(in), value :: in1
-                type(CElementGeometry), intent(in) :: eg
-                type(ExitStatus) :: r
-            end function compute_gradients_wrapper
-        end interface
-        type(ElementDescription), intent(in) :: ed
-        double precision, dimension (:), target :: ewk;
-        double precision, dimension (:), target :: in1;
-        type(ElementGeometry), intent(in) :: eg
-        type(ExitStatus) :: r
-        r = compute_gradients_wrapper(ed, c_loc(ewk), c_loc(in1), convert_element_geometry(eg))
-    end function decondensate
-  !
+        r = invert_matrix_wrapper(gene_funs, c_loc(data), index)
+    end function invert_matrix
 end module castem_hho

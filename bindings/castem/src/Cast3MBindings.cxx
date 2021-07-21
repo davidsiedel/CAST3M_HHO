@@ -14,6 +14,7 @@
 #include <cstring>
 #include <stdexcept>
 #include "Mechhano/Cast3M/Cast3MBindings.hxx"
+#include "Eigen/Dense"
 
 extern "C" {
 
@@ -76,47 +77,14 @@ extern "C" {
       }
     }  // end of castem_hho_handle_cxx_exception
 
-    castem_hho_status castem_hho_print_element_geometry(
-        const castem_hho_element_geometry *const gd) {
-      if (gd == nullptr) {
-        return castem_hho_report_failure(
-            "castem_hho_print_element_geometry: "
-            "invalid argument");
-      }
-      std::cout << "- euclidian dimension: " << gd->dim_eucli << '\n';
-      std::cout << "- number of vertices_coordinates: " << gd->num_vertices << '\n';
-      for (int i = 0; i != gd->num_vertices; ++i) {
-        std::cout << "\t- vertex " << i << ": ";
-        for (int d = 0; d != gd->dim_eucli; ++d) {
-          std::cout << " " << gd->vertices_coordinates[i + d * gd->num_vertices];
-        }
-        std::cout << '\n';
-      }
-      std::cout << "- number of faces: " << gd->num_faces << '\n';
-      std::cout << "- number of vertices_coordinates per face:\n";
-      for (int i = 0; i != gd->num_faces; ++i) {
-        std::cout << "\t- face " << i << ": " << gd->num_vertices_per_face[i] << '\n';
-      }
-      std::cout << "- faces connectivity:\n";
-      auto pos = int{};
-      for (int i = 0; i != gd->num_faces; ++i) {
-        std::cout << "\t- face " << i << ":";
-        for (int v = 0; v != gd->num_vertices_per_face[i]; ++v, ++pos) {
-          std::cout << " " << gd->connectivity[pos];
-        }
-        std::cout << '\n';
-      }
-      return castem_hho_report_success();
-    }; // end of castem_hho_print_element_geometry
-
-    castem_hho_status castem_hho_get_element_description(
-        castem_hho_element_description *const d,
+    castem_hho_status castem_hho_get_element_functions(
+        castem_hho_element_functions *const d,
+//        const castem_hho_element_geometry *const gd,
         const char *const l,
-        const char *const f,
-        const castem_hho_element_geometry *const gd) {
-      using fct_ptr =
-          castem_hho_status (*)(castem_hho_element_description *const,
-                                const castem_hho_element_geometry *const);
+        const char *const f) {
+      using fct_ptr = castem_hho_status (*)(castem_hho_element_functions *const
+//                                const castem_hho_element_geometry *const
+                                );
       std::cout << l << std::endl;
       std::cout << f << std::endl;
     #if (defined _WIN32 || defined _WIN64) && (!defined __CYGWIN__)
@@ -138,93 +106,130 @@ extern "C" {
       if (fct == nullptr) {
         return castem_hho_report_failure(getErrorMessage().c_str());
       }
-      return fct(d, gd);
+//      return fct(d, gd);
+        return fct(d);
     #endif /* (defined _WIN32 || defined _WIN64) && (!defined __CYGWIN__) */
     }  // end of castem_hho_get_element_description
 
-    castem_hho_status castem_hho_initialize_workspace(
-            const castem_hho_element_description *const ed,
-            double *const workspace, // worksapce
-            const castem_hho_element_geometry *const gd
-    ) {
-        return ed->initialize_workspace(
-                workspace,
-                gd
-        );
-    }
+    castem_hho_status castem_hho_get_element_description(
+            castem_hho_element_description *const d,
+            const char *const l,
+            const char *const f) {
+        using fct_ptr = castem_hho_status (*)(castem_hho_element_description *const);
+        std::cout << l << std::endl;
+        std::cout << f << std::endl;
+    #if (defined _WIN32 || defined _WIN64) && (!defined __CYGWIN__)
+        const auto lib  = LoadLibrary(TEXT(l));
+          if (lib == nullptr) {
+            return castem_hho_report_failure(getErrorMessage().c_str());
+          }
+          const auto fct = reinterpret_cast<fct_ptr>(::GetProcAddress(lib, f));
+          if(fct == nullptr){
+            return castem_hho_report_failure(getErrorMessage().c_str());
+          }
+          return fct(d, gd);
+    #else
+        const auto lib = ::dlopen(l, RTLD_NOW);
+        if (lib == nullptr) {
+            return castem_hho_report_failure(getErrorMessage().c_str());
+        }
+        const auto fct = reinterpret_cast<fct_ptr>(dlsym(lib, f));
+        if (fct == nullptr) {
+            return castem_hho_report_failure(getErrorMessage().c_str());
+        }
+        return fct(d);
+    #endif /* (defined _WIN32 || defined _WIN64) && (!defined __CYGWIN__) */
+    }  // end of castem_hho_get_element_description
 
-    castem_hho_status castem_hho_get_gauss_data(
-            const castem_hho_element_description *const ed,
-            double *const pts,
-            double *const wts,
-            const castem_hho_element_geometry *const gd
-    ) {
-        return ed->get_gauss_data(
-                pts,
-                wts,
-                gd
-        );
-    }
-
-    castem_hho_status castem_hho_compute_gradients(
-            const castem_hho_element_description *const ed,
-            double *const workspace, // worksapce
-            double *const gradient_data, // OUT
-            const double *const faces_unknows, // IN
-            const castem_hho_element_geometry *const gd
+    castem_hho_status castem_hho_get_generic_functions(
+            castem_hho_generic_functions *const d,
+            const char *const l,
+            const char *const f
             ) {
-        return ed->compute_gradients(
-                workspace,
-                gradient_data,
-                faces_unknows,
-                gd
-                );
-    }
+        using fct_ptr = castem_hho_status (*)(castem_hho_generic_functions *const);
+        std::cout << l << std::endl;
+        std::cout << f << std::endl;
+    #if (defined _WIN32 || defined _WIN64) && (!defined __CYGWIN__)
+        const auto lib  = LoadLibrary(TEXT(l));
+              if (lib == nullptr) {
+                return castem_hho_report_failure(getErrorMessage().c_str());
+              }
+              const auto fct = reinterpret_cast<fct_ptr>(::GetProcAddress(lib, f));
+              if(fct == nullptr){
+                return castem_hho_report_failure(getErrorMessage().c_str());
+              }
+              return fct(d, gd);
+    #else
+        const auto lib = ::dlopen(l, RTLD_NOW);
+        if (lib == nullptr) {
+            return castem_hho_report_failure(getErrorMessage().c_str());
+        }
+        const auto fct = reinterpret_cast<fct_ptr>(dlsym(lib, f));
+        if (fct == nullptr) {
+            return castem_hho_report_failure(getErrorMessage().c_str());
+        }
+        return fct(d);
+    #endif /* (defined _WIN32 || defined _WIN64) && (!defined __CYGWIN__) */
+    }  // end of castem_hho_get_element_description
 
-    castem_hho_status castem_hho_compute_internal_forces(
-            const castem_hho_element_description *const ed,
-            double *const workspace, // worksapce
-            double *const internal_forces_data, // OUT
-            const double *const stress, // IN
-            const double *const faces_unknows, // IN
-            const castem_hho_element_geometry *const gd
+    castem_hho_status castem_hho_get_gradient_operator(
+            const castem_hho_element_functions *const elem_funs,
+            const castem_hho_element_geometry *const elem_geom,
+            double *const data, // worksapce
+            int64_t index
     ) {
-        return ed->compute_internal_forces(
-                workspace,
-                internal_forces_data,
-                stress,
-                faces_unknows,
-                gd
+        return elem_funs->get_gradient_operator(
+                elem_geom,
+                data,
+                index
         );
     }
 
-    castem_hho_status castem_hho_compute_system(
-            const castem_hho_element_description *const ed,
-            double *const workspace, // worksapce
-            double *const system_data, // OUT
-            const double *const ktan, // IN
-            const double *const res, // IN
-            const castem_hho_element_geometry *const gd
+    castem_hho_status castem_hho_get_stabilization_operator(
+            const castem_hho_element_functions *const elem_funs,
+            const castem_hho_element_geometry *const elem_geom,
+            double *const data // worksapce
     ) {
-        return ed->compute_system(
-                workspace,
-                system_data,
-                ktan,
-                res,
-                gd
+        return elem_funs->get_stabilization_operator(
+                elem_geom,
+                data
         );
     }
 
-    castem_hho_status castem_hho_decondensate(
-            const castem_hho_element_description *const ed,
-            double *const workspace, // worksapce
-            const double *const faces_corrections, // IN
-            const castem_hho_element_geometry *const gd
+    castem_hho_status castem_hho_get_gauss_weight(
+            const castem_hho_element_functions *const elem_funs,
+            const castem_hho_element_geometry *const elem_geom,
+            double *const data, // worksapce
+            int64_t index
     ) {
-        return ed->decondensate(
-                workspace,
-                faces_corrections,
-                gd
+        return elem_funs->get_gauss_weight(
+                elem_geom,
+                data,
+                index
+        );
+    }
+
+    castem_hho_status castem_hho_get_gauss_point(
+            const castem_hho_element_functions *const elem_funs,
+            const castem_hho_element_geometry *const elem_geom,
+            double *const data, // worksapce
+            int64_t index
+    ) {
+        return elem_funs->get_gauss_point(
+                elem_geom,
+                data,
+                index
+        );
+    }
+
+    castem_hho_status castem_hho_invert_matrix(
+            const castem_hho_generic_functions *const gene_funs,
+            double *const data, // data
+            int64_t index // index
+            ) {
+        return gene_funs->invert_matrix(
+                data,
+                index
         );
     }
 
