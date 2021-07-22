@@ -18,7 +18,9 @@ namespace feta {
     template<intg r, intg c>
     using EigMapC = Eigen::Map<const Eigen::Matrix<real, r, c, Eigen::ColMajor>>;
     template<intg r, intg c>
-    using EigMap2 = Eigen::Map<const Eigen::Matrix<intg, r, c, Eigen::RowMajor>>;
+    using EigMapIntR = Eigen::Map<const Eigen::Matrix<intg, r, c, Eigen::RowMajor>>;
+    template<intg r, intg c>
+    using EigMapIntC = Eigen::Map<const Eigen::Matrix<intg, r, c, Eigen::ColMajor>>;
 
 //    template<intg r, intg c>
 //    using EigMat = Eigen::Matrix<real, r, c>;

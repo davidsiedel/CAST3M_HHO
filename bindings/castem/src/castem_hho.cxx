@@ -15,10 +15,10 @@ extern "C" {
 
 // public interface for the element
 MECHHANO_CASTEM_EXPORT castem_hho_status
-hho_equ_ss_tri3_get_element_description(
+hho_1_1_sp_tri3_get_element_description(
     castem_hho_element_description *const description) {
   try {
-      using Cast3MFunc = feta::hybrid::Cas3MFunctions<ElementType::LinearTriangle, feta::hybrid::FieldType::VECTOR_SMALL_STRAIN, 1, 1>;
+      using Cast3MFunc = feta::hybrid::Cas3MFunctions<ElementType::LinearTriangle, feta::hybrid::FieldType::VECTOR_SMALL_STRAIN_CAST3M, 1, 1>;
       Cast3MFunc::getDescription(description);
   } catch (...) {
     return castem_hho_handle_cxx_exception();
@@ -27,16 +27,64 @@ hho_equ_ss_tri3_get_element_description(
 }
 
 MECHHANO_CASTEM_EXPORT castem_hho_status
-hho_equ_ss_tri3_get_element_functions(
+hho_1_1_sp_tri3_get_element_functions(
         castem_hho_element_functions *const elem_funs) {
     try {
-        using Cast3MFunc = feta::hybrid::Cas3MFunctions<ElementType::LinearTriangle, feta::hybrid::FieldType::VECTOR_SMALL_STRAIN, 1, 1>;
+        using Cast3MFunc = feta::hybrid::Cas3MFunctions<ElementType::LinearTriangle, feta::hybrid::FieldType::VECTOR_SMALL_STRAIN_CAST3M, 1, 1>;
         Cast3MFunc::getFunctions(elem_funs);
     } catch (...) {
         return castem_hho_handle_cxx_exception();
     }
     return castem_hho_report_success();
 }
+MECHHANO_CASTEM_EXPORT castem_hho_status
+hho_1_1_sp_qua4_get_element_description(
+        castem_hho_element_description *const description) {
+    try {
+        using Cast3MFunc = feta::hybrid::Cas3MFunctions<ElementType::LinearQuadrangle, feta::hybrid::FieldType::VECTOR_SMALL_STRAIN_CAST3M, 1, 1>;
+        Cast3MFunc::getDescription(description);
+    } catch (...) {
+        return castem_hho_handle_cxx_exception();
+    }
+    return castem_hho_report_success();
+}
+
+MECHHANO_CASTEM_EXPORT castem_hho_status
+hho_1_1_sp_qua4_get_element_functions(
+        castem_hho_element_functions *const elem_funs) {
+    try {
+        using Cast3MFunc = feta::hybrid::Cas3MFunctions<ElementType::LinearQuadrangle, feta::hybrid::FieldType::VECTOR_SMALL_STRAIN_CAST3M, 1, 1>;
+        Cast3MFunc::getFunctions(elem_funs);
+    } catch (...) {
+        return castem_hho_handle_cxx_exception();
+    }
+    return castem_hho_report_success();
+}
+
+MECHHANO_CASTEM_EXPORT castem_hho_status
+hho_1_1_sp_poly05_get_element_description(
+        castem_hho_element_description *const description) {
+    try {
+        using Cast3MFunc = feta::hybrid::Cas3MFunctions<ElementType::LinearPentagon, feta::hybrid::FieldType::VECTOR_SMALL_STRAIN_CAST3M, 1, 1>;
+        Cast3MFunc::getDescription(description);
+    } catch (...) {
+        return castem_hho_handle_cxx_exception();
+    }
+    return castem_hho_report_success();
+}
+
+MECHHANO_CASTEM_EXPORT castem_hho_status
+hho_1_1_sp_poly05_get_element_functions(
+        castem_hho_element_functions *const elem_funs) {
+    try {
+        using Cast3MFunc = feta::hybrid::Cas3MFunctions<ElementType::LinearPentagon, feta::hybrid::FieldType::VECTOR_SMALL_STRAIN_CAST3M, 1, 1>;
+        Cast3MFunc::getFunctions(elem_funs);
+    } catch (...) {
+        return castem_hho_handle_cxx_exception();
+    }
+    return castem_hho_report_success();
+}
+
 
 MECHHANO_CASTEM_EXPORT castem_hho_status
 hho_get_generic_functions(

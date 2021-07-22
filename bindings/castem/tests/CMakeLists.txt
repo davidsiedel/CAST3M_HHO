@@ -4,12 +4,22 @@ if((CMAKE_HOST_WIN32) AND (NOT MSYS))
 	#    PROPERTY ENVIRONMENT "PATH=$<TARGET_FILE_DIR:MFrontGenericInterface>\;${MGIS_PATH_STRING}")
 endif((CMAKE_HOST_WIN32) AND (NOT MSYS))
 
-add_executable(Cast3MDummyTests-f test_triangle.f95)
-target_include_directories(Cast3MDummyTests-f
+add_executable(test_tri3-f test_triangle.f95)
+target_include_directories(test_tri3-f
 		PRIVATE "${CMAKE_BINARY_DIR}/bindings/castem/modules")
-target_link_libraries(Cast3MDummyTests-f ${PROJECT_NAME}Cast3MBindings)
+target_link_libraries(test_tri3-f ${PROJECT_NAME}Cast3MBindings)
 add_test(
-		NAME Cast3MDummyTests_f
-		COMMAND Cast3MDummyTests-f $<TARGET_FILE:${PROJECT_NAME}Cast3MElements>)
-set_property(TEST Cast3MDummyTests_f
+		NAME test_tri3_f
+		COMMAND test_tri3-f $<TARGET_FILE:${PROJECT_NAME}Cast3MElements>)
+set_property(TEST test_tri3_f
+		PROPERTY DEPENDS ${PROJECT_NAME}Cast3MElements>)
+
+add_executable(test_qua4-f test_quadrangle.f95)
+target_include_directories(test_qua4-f
+		PRIVATE "${CMAKE_BINARY_DIR}/bindings/castem/modules")
+target_link_libraries(test_qua4-f ${PROJECT_NAME}Cast3MBindings)
+add_test(
+		NAME test_qua4_f
+		COMMAND test_qua4-f $<TARGET_FILE:${PROJECT_NAME}Cast3MElements>)
+set_property(TEST test_qua4_f
 		PROPERTY DEPENDS ${PROJECT_NAME}Cast3MElements>)

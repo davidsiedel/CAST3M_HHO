@@ -83,14 +83,14 @@ subroutine test()
     !    ---------------------------------------------------------------------------------------------------------------
     !    INITIALIZE GEOMETRY
     !    ---------------------------------------------------------------------------------------------------------------
-    integer(c_int64_t), dimension(40) :: conn = (/      0, 1, 1, 2, 2, 0, 0, 0, 0, 0, &
-                                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
-                                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
-                                                        0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-    integer(c_int64_t), dimension(40) :: verts = (/     0., 1., 0., 0., 0., 1., 0., 0., 0., 0., &
-                                                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., &
-                                                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0., &
-                                                        0., 0., 0., 0., 0., 0., 0., 0., 0., 0./)
+    integer(c_int64_t), dimension(40) :: conn = (/      0, 1, 1, 2, 2, 3, 3, 0, 0, 0, &
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
+    integer(c_int64_t), dimension(40) :: verts = (/     0., 1., 1., 0., 0., 0., 1., 1., 0., 0., &
+            0., 0., 0., 0., 0., 0., 0., 0., 0., 0., &
+            0., 0., 0., 0., 0., 0., 0., 0., 0., 0., &
+            0., 0., 0., 0., 0., 0., 0., 0., 0., 0./)
     eg % connectivity = conn
     eg % vertices_coordinates = verts
     !    ---------------------------------------------------------------------------------------------------------------
@@ -98,8 +98,8 @@ subroutine test()
     !    ---------------------------------------------------------------------------------------------------------------
     ! call the library and build fotran objects
     call get_command_argument(1, l)
-    r = get_element_description(ed, TRIM(l), "hho_1_1_sp_tri3_get_element_description")
-    r = get_element_functions(ef, TRIM(l), "hho_1_1_sp_tri3_get_element_functions")
+    r = get_element_description(ed, TRIM(l), "hho_1_1_sp_qua4_get_element_description")
+    r = get_element_functions(ef, TRIM(l), "hho_1_1_sp_qua4_get_element_functions")
     r = get_generic_functions(gf, TRIM(l), "hho_get_generic_functions")
     ! print element geometry attributes
     write(*,*) "connectivity : ", eg % connectivity

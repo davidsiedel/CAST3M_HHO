@@ -113,7 +113,9 @@ namespace feta::hybrid{
                 std::cout << "******** GETTING GRADIENT OPERATOR AT GAUSS POINT : " << index << std::endl;
                 // --- BUILDING THE ELEMENT
                 const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
-                const EigMap2<2, Cast3MElement::num_nodes> ordening = EigMap2<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
+                const EigMapIntC<2, Cast3MElement::num_nodes> ordening = EigMapIntC<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMap<2, Cast3MElement::num_nodes> ordening = EigMap<2, Cast3MElement::num_nodes>(gd->connectivity);
                 std::cout << "- VERICES AS EXTRACTED :" << std::endl;
                 std::cout << verts << std::endl;
                 std::cout << "- CONNECTIVITY AS EXTRACTED :" << std::endl;
@@ -123,7 +125,8 @@ namespace feta::hybrid{
                 for (int i = 0; i < grad_size; ++i) {
                     for (int j = 0; j < elem_size; ++j) {
                         int array_index = i * elem_size + j;
-                        data[array_index] += elem.gradient_operators[index](i, j);
+                        int effetcive_index = index - 1;
+                        data[array_index] += elem.gradient_operators[effetcive_index](i, j);
                     }
                 }
                 std::cout << elem.gradient_operators[index] << std::endl;
@@ -142,7 +145,9 @@ namespace feta::hybrid{
                 std::cout << "******** GETTING STABILIZATION OPERATOR" << std::endl;
                 // --- BUILDING THE ELEMENT
                 const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
-                const EigMap2<2, Cast3MElement::num_nodes> ordening = EigMap2<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
+                const EigMapIntC<2, Cast3MElement::num_nodes> ordening = EigMapIntC<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMap<2, Cast3MElement::num_nodes> ordening = EigMap<2, Cast3MElement::num_nodes>(gd->connectivity);
                 std::cout << "- VERICES AS EXTRACTED :" << std::endl;
                 std::cout << verts << std::endl;
                 std::cout << "- CONNECTIVITY AS EXTRACTED :" << std::endl;
@@ -171,9 +176,12 @@ namespace feta::hybrid{
             try {
                 std::cout << "******** GETTING GAUSS WEIGHT : " << index << std::endl;
                 const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
-                const EigMap2<2, Cast3MElement::num_nodes> ordening = EigMap2<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
+                const EigMapIntC<2, Cast3MElement::num_nodes> ordening = EigMapIntC<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMap<2, Cast3MElement::num_nodes> ordening = EigMap<2, Cast3MElement::num_nodes>(gd->connectivity);
                 Cast3MElement elem = Cast3MElement(verts, ordening);
-                real qw = elem.cell_cmpt.getQuadWeight(index);
+                int effetcive_index = index - 1;
+                real qw = elem.cell_cmpt.getQuadWeight(effetcive_index);
                 data[0] = qw;
             } catch (...) {
                 return castem_hho_handle_cxx_exception();
@@ -189,9 +197,12 @@ namespace feta::hybrid{
             try {
                 std::cout << "******** GETTING GAUSS POINT : " << index << std::endl;
                 const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
-                const EigMap2<2, Cast3MElement::num_nodes> ordening = EigMap2<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMap<2, Cast3MElement::num_nodes> ordening = EigMap<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
+                const EigMapIntC<2, Cast3MElement::num_nodes> ordening = EigMapIntC<2, Cast3MElement::num_nodes>(gd->connectivity);
                 Cast3MElement elem = Cast3MElement(verts, ordening);
-                EigMat<2, 1> qp = elem.cell_cmpt.getQuadPoint(index);
+                int effetcive_index = index - 1;
+                EigMat<2, 1> qp = elem.cell_cmpt.getQuadPoint(effetcive_index);
                 for (int i = 0; i < Cast3MElement::d; ++i) {
                     data[i] = qp(i);
                 }
@@ -258,7 +269,7 @@ namespace feta::hybrid{
 //                std::cout << "******** INITIALIZING WORKSPACE" << std::endl;
 //                // --- BUILDING THE ELEMENT
 //                const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
-//                const EigMap2<2, Cast3MElement::num_nodes> ordening = EigMap2<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
 //                std::cout << "- VERICES AS EXTRACTED :" << std::endl;
 //                std::cout << verts << std::endl;
 //                std::cout << "- CONNECTIVITY AS EXTRACTED :" << std::endl;
@@ -338,7 +349,7 @@ namespace feta::hybrid{
 //            try {
 //                std::cout << "******** WRITING GAUSS DATA" << std::endl;
 //                const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
-//                const EigMap2<2, Cast3MElement::num_nodes> ordening = EigMap2<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
 //                Cast3MElement elem = Cast3MElement(verts, ordening);
 //                std::cout << "--- FILLING GAUSS OUTPUT" << std::endl;
 //                for (int i = 0; i < nq; ++i) {
