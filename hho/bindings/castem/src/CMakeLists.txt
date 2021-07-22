@@ -27,6 +27,6 @@ target_link_libraries(${PROJECT_NAME}Cast3MBindings
 # library containing a set of predefined elements
  
 mechhano_library(${PROJECT_NAME}Cast3MElements
-    Triangle.cxx)
+    castem_hho.cxx)
 target_link_libraries(${PROJECT_NAME}Cast3MElements
 	PUBLIC ${PROJECT_NAME}Cast3MBindings-c)
