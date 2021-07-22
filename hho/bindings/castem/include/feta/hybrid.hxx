@@ -304,7 +304,7 @@ namespace feta::hybrid{
         const CellCmpt cell_cmpt;
         const std::vector<EigMat<grad_size, elem_size>> gradient_operators;
         const EigMat<elem_size, elem_size> stabilization_operator;
-        EigMat<cr * field_size, elem_size> recrhs;
+//        EigMat<cr * field_size, elem_size> recrhs;
     private:
 
         template<typename FaceType>
