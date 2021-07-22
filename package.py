@@ -24,7 +24,7 @@ class Hho(CMakePackage):
 
     depends_on('eigen@3.3.8', type=('build', 'run'))
 
-    extends('python', when='+python_bindings')
+    # extends('python', when='+python_bindings')
 
     def cmake_args(self):
 
@@ -33,5 +33,6 @@ class Hho(CMakePackage):
         args.append("-DCMAKE_BUILD_TYPE=Release")
         args.append("-DCMAKE_FIND_DEBUG_MODE=ON")
         args.append("-DTEST_MODE=test")
+        args.append("-DEigen3_DIR={0}".format(self.spec['eigen'].prefix))
 
         return args

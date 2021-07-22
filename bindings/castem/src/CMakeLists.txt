@@ -14,8 +14,8 @@ endif(NOT WIN32)
 # main fortran library
 
 mechhano_library(${PROJECT_NAME}Cast3MBindings SHARED
-  castem_hho_fortran_utilities.f95
-  castem_hho.f95)
+		castem_hho_fortran_utilities.f95
+		castem_hho.f95)
 set_target_properties(${PROJECT_NAME}Cast3MBindings
   PROPERTIES Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/bindings/castem/modules")
 target_include_directories(${PROJECT_NAME}Cast3MBindings
