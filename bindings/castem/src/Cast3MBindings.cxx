@@ -14,7 +14,8 @@
 #include <cstring>
 #include <stdexcept>
 #include "Mechhano/Cast3M/Cast3MBindings.hxx"
-#include "Eigen/Dense"
+//#include "Eigen/Dense"
+#include "lib/eigen3/Eigen/Dense"
 
 extern "C" {
 

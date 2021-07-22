@@ -18,7 +18,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
 endif(CMAKE_BUILD_TYPE STREQUAL "Coverage")
 
 # use eigen
-find_package (Eigen3 REQUIRED NO_MODULE)
+#find_package (Eigen3 REQUIRED NO_MODULE)
 
 # testing
 set(CTEST_CONFIGURATION_TYPE "${JOB_BUILD_CONFIGURATION}")

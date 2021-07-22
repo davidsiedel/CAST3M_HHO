@@ -5,7 +5,8 @@
 #ifndef FETA_FETA_HXX
 #define FETA_FETA_HXX
 
-#include <Eigen/Dense>
+//#include <Eigen/Dense>
+#include "lib/eigen3/Eigen/Dense"
 #include <iostream>
 #include "config/config.hxx"
 
