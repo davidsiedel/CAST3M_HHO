@@ -1,1 +1,9 @@
 cmake ../mechhano-0/ -DCMAKE_BUILD_TYPE=Release -DTEST_MODE=test -DEigen3_DIR=/home/th202608/codes/spack/master/src/spack/opt/spack/linux-debian10-skylake/gcc-8.3.0/eigen-3.3.8-ydtq35aprbrhp3ficpjsgswu3k5xwrdx/share/eigen3/cmake -DCMAKE_FIND_DEBUG_MODE=ON
+
+-DEigen3_DIR=/home/dsiedel/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.3.0/eigen-3.3.8-ynl225sju3opykhsuusw6mfritdgilbj/share/eigen3/cmake
+-DCMAKE_BUILD_TYPE=Release
+-DTEST_MODE=test
+-DCMAKE_FIND_DEBUG_MODE=ON
+-DCMAKE_INSTALL_PREFIX=/home/dsiedel/temp/hho_install
+
+cmake ../hho/ -DEigen3_DIR=/home/dsiedel/spack/opt/spack/linux-ubuntu20.04-skylake/gcc-9.3.0/eigen-3.3.8-ynl225sju3opykhsuusw6mfritdgilbj/share/eigen3/cmake -DCMAKE_BUILD_TYPE=Release -DTEST_MODE=test -DCMAKE_FIND_DEBUG_MODE=ON -DCMAKE_INSTALL_PREFIX=/home/dsiedel/temp/hho_install
