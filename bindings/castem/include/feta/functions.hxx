@@ -122,14 +122,14 @@ namespace feta::hybrid{
                 std::cout << ordening << std::endl;
                 Cast3MElement elem = Cast3MElement(verts, ordening);
                 // --- FILLING THE ELEMENT WORKSPACE FOR GRADIENTS
+                int effetcive_index = index - 1;
                 for (int i = 0; i < grad_size; ++i) {
                     for (int j = 0; j < elem_size; ++j) {
                         int array_index = i * elem_size + j;
-                        int effetcive_index = index - 1;
                         data[array_index] += elem.gradient_operators[effetcive_index](i, j);
                     }
                 }
-                std::cout << elem.gradient_operators[index] << std::endl;
+                std::cout << elem.gradient_operators[effetcive_index] << std::endl;
                 std::cout << "******** GRADIENT OPERATOR AT GAUSS POINT : " << index << " COMPUTED" << std::endl;
             } catch (...) {
                 return castem_hho_handle_cxx_exception();

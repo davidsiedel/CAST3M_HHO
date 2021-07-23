@@ -96,7 +96,7 @@ extern "C" {
       if(fct == nullptr){
         return castem_hho_report_failure(getErrorMessage().c_str());
       }
-      return fct(d, gd);
+      return fct(d);
     #else
       const auto lib = ::dlopen(l, RTLD_NOW);
       if (lib == nullptr) {
@@ -127,7 +127,7 @@ extern "C" {
           if(fct == nullptr){
             return castem_hho_report_failure(getErrorMessage().c_str());
           }
-          return fct(d, gd);
+          return fct(d);
     #else
         const auto lib = ::dlopen(l, RTLD_NOW);
         if (lib == nullptr) {
@@ -158,7 +158,7 @@ extern "C" {
               if(fct == nullptr){
                 return castem_hho_report_failure(getErrorMessage().c_str());
               }
-              return fct(d, gd);
+              return fct(d);
     #else
         const auto lib = ::dlopen(l, RTLD_NOW);
         if (lib == nullptr) {

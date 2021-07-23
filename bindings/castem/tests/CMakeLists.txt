@@ -23,3 +23,23 @@ add_test(
 		COMMAND test_qua4-f $<TARGET_FILE:${PROJECT_NAME}Cast3MElements>)
 set_property(TEST test_qua4_f
 		PROPERTY DEPENDS ${PROJECT_NAME}Cast3MElements>)
+
+add_executable(test_poly05-f test_pentagon.f95)
+target_include_directories(test_poly05-f
+		PRIVATE "${CMAKE_BINARY_DIR}/bindings/castem/modules")
+target_link_libraries(test_poly05-f ${PROJECT_NAME}Cast3MBindings)
+add_test(
+		NAME test_poly05_f
+		COMMAND test_poly05-f $<TARGET_FILE:${PROJECT_NAME}Cast3MElements>)
+set_property(TEST test_poly05_f
+		PROPERTY DEPENDS ${PROJECT_NAME}Cast3MElements>)
+
+add_executable(test_poly20-f test_icosagon.f95)
+target_include_directories(test_poly20-f
+		PRIVATE "${CMAKE_BINARY_DIR}/bindings/castem/modules")
+target_link_libraries(test_poly20-f ${PROJECT_NAME}Cast3MBindings)
+add_test(
+		NAME test_poly20_f
+		COMMAND test_poly20-f $<TARGET_FILE:${PROJECT_NAME}Cast3MElements>)
+set_property(TEST test_poly20_f
+		PROPERTY DEPENDS ${PROJECT_NAME}Cast3MElements>)

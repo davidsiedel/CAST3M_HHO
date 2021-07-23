@@ -83,11 +83,11 @@ subroutine test()
     !    ---------------------------------------------------------------------------------------------------------------
     !    INITIALIZE GEOMETRY
     !    ---------------------------------------------------------------------------------------------------------------
-    integer(c_int64_t), dimension(40) :: conn = (/      0, 1, 1, 2, 2, 3, 3, 0, 0, 0, &
+    integer(c_int64_t), dimension(40) :: conn = (/      0, 1, 1, 2, 2, 3, 3, 4, 4, 0, &
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-    double precision, dimension(40) :: verts = (/     0., 1., 1., 0., 0., 0., 1., 1., 0., 0., &
+    double precision, dimension(40) :: verts = (/     0., 1., 1., 0.5, 0., 0., 0., 1., 1., 1., &
             0., 0., 0., 0., 0., 0., 0., 0., 0., 0., &
             0., 0., 0., 0., 0., 0., 0., 0., 0., 0., &
             0., 0., 0., 0., 0., 0., 0., 0., 0., 0./)
@@ -98,8 +98,8 @@ subroutine test()
     !    ---------------------------------------------------------------------------------------------------------------
     ! call the library and build fotran objects
     call get_command_argument(1, l)
-    r = get_element_description(ed, TRIM(l), "hho_1_1_sp_qua4_get_element_description")
-    r = get_element_functions(ef, TRIM(l), "hho_1_1_sp_qua4_get_element_functions")
+    r = get_element_description(ed, TRIM(l), "hho_1_1_sp_poly05_get_element_description")
+    r = get_element_functions(ef, TRIM(l), "hho_1_1_sp_poly05_get_element_functions")
     r = get_generic_functions(gf, TRIM(l), "hho_get_generic_functions")
     ! print element geometry attributes
     write(*,*) "connectivity : ", eg % connectivity
@@ -125,12 +125,12 @@ subroutine test()
     write(*,*) "dim_MVC : ", ed % dim_MVC
     ! get and print stabilization operator
     r = get_stabilization_operator(ef, eg, Z_data)
-!    write(*,*) "Z_data : ", Z_data ! sorted row-wise
+    !    write(*,*) "Z_data : ", Z_data ! sorted row-wise
     ! loop over indices of quadrature points
     do iloop = 1, ed % num_quadrature_points
         write(*,*) "iloop : ", iloop
         r = get_gradient_operator(ef, eg, B_data, iloop) ! sorted row-wise
-!        write(*,*) "B_data : ", B_data
+        !        write(*,*) "B_data : ", B_data
         r = get_gauss_weight(ef, eg, gauss_weight_data, iloop)
         write(*,*) "gauss_weight_data : ", gauss_weight_data
         r = get_gauss_point(ef, eg, gauss_point_data, iloop)

@@ -87,7 +87,7 @@ subroutine test()
                                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
                                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
                                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-    integer(c_int64_t), dimension(40) :: verts = (/     0., 1., 0., 0., 0., 1., 0., 0., 0., 0., &
+    double precision, dimension(40) :: verts = (/     0., 1., 0., 0., 0., 1., 0., 0., 0., 0., &
                                                         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., &
                                                         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., &
                                                         0., 0., 0., 0., 0., 0., 0., 0., 0., 0./)
@@ -125,12 +125,12 @@ subroutine test()
     write(*,*) "dim_MVC : ", ed % dim_MVC
     ! get and print stabilization operator
     r = get_stabilization_operator(ef, eg, Z_data)
-    write(*,*) "Z_data : ", Z_data ! sorted row-wise
+!    write(*,*) "Z_data : ", Z_data ! sorted row-wise
     ! loop over indices of quadrature points
     do iloop = 1, ed % num_quadrature_points
         write(*,*) "iloop : ", iloop
         r = get_gradient_operator(ef, eg, B_data, iloop) ! sorted row-wise
-        write(*,*) "B_data : ", B_data
+!        write(*,*) "B_data : ", B_data
         r = get_gauss_weight(ef, eg, gauss_weight_data, iloop)
         write(*,*) "gauss_weight_data : ", gauss_weight_data
         r = get_gauss_point(ef, eg, gauss_point_data, iloop)
