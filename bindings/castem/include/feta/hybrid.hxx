@@ -687,7 +687,8 @@ namespace feta::hybrid{
                     const intg dj = std::get<2>(Field::voigt_data[j]);
                     const real coef = std::get<3>(Field::voigt_data[j]);
                     EigMat<ck, elem_size> rhs;
-                    if constexpr(Field::derivation_type == DerivationType::SYMMETRIC) {
+//                    if constexpr(Field::derivation_type == DerivationType::SYMMETRIC) {
+                    if (Field::derivation_type == DerivationType::SYMMETRIC) {
                         rhs = getGradientRHS(di, dj);
                     }
                     else {

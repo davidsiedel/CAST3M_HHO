@@ -60,13 +60,15 @@ namespace feta::basis {
     private:
         EigMat2<dim, d> getExps() const {
             EigMat2<dim, d> a;
-            if constexpr (d == 1) {
+//            if constexpr (d == 1) {
+            if (d == 1) {
                 int row_count = 0;
                 for (int i = 0; i < ord + 1; ++i) {
                     a(row_count, 0) = intg(i);
                     row_count += 1;
                 }
-            } else if constexpr (d == 2) {
+//            } else if constexpr (d == 2) {
+            } else if (d == 2) {
                 int row_count = 0;
                 for (int i = 0; i < ord + 1; ++i) {
                     for (int j = 0; j < i + 1; ++j) {
@@ -76,7 +78,8 @@ namespace feta::basis {
                         row_count += 1;
                     }
                 }
-            } else if constexpr (d == 3) {
+//            } else if constexpr (d == 3) {
+            } else if (d == 3) {
                 int row_count = 0;
                 for (int i = 0; i < ord + 1; ++i) {
                     for (int j = 0; j < i + 1; ++j) {
