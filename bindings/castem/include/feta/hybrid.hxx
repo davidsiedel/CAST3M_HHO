@@ -112,12 +112,13 @@ namespace feta::hybrid{
         static constexpr DerivationType derivation_type = DerivationType::SYMMETRIC;
         static constexpr intg field_size = 2;
         static constexpr intg gradient_size = 9;
-        static constexpr intg voigt_size = 3;
+        static constexpr intg voigt_size = 4;
         static constexpr std::array<std::tuple<intg, intg, intg, real>, voigt_size> voigt_data = {
                 {
                         {0, 0, 0, 1.0},
                         {1, 1, 1, 1.0},
-                        {3, 0, 1, 1.0}
+                        {3, 0, 1, 1.0},
+                        {4, 1, 0, 1.0}
                 }
         };
     };
