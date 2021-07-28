@@ -16,7 +16,13 @@ namespace feta::hybrid{
     enum struct FieldType {
         VECTOR_SMALL_STRAIN,
         VECTOR_SMALL_STRAIN_CAST3M,
+        VECTOR_FINITE_STRAIN_CAST3M,
         SCALAR
+    };
+
+    enum struct DerivationType {
+        FULL,
+        SYMMETRIC
     };
 
     enum struct HHOOrder {
@@ -46,6 +52,7 @@ namespace feta::hybrid{
 //    };
 
     template<intg d, intg k, intg l>
+//    template<intg d, intg l, intg k>
     struct HHOSpace{
         HHOSpace() :
                 grad_basis(Monomial<d, k>()),
@@ -80,6 +87,7 @@ namespace feta::hybrid{
 
     template <>
     struct FieldPolicy<2, FieldType::VECTOR_SMALL_STRAIN> {
+        static constexpr DerivationType derivation_type = DerivationType::SYMMETRIC;
         static constexpr intg field_size = 2;
         static constexpr intg gradient_size = 4;
         static constexpr intg voigt_size = 3;
@@ -101,6 +109,7 @@ namespace feta::hybrid{
 
     template <>
     struct FieldPolicy<2, FieldType::VECTOR_SMALL_STRAIN_CAST3M> {
+        static constexpr DerivationType derivation_type = DerivationType::SYMMETRIC;
         static constexpr intg field_size = 2;
         static constexpr intg gradient_size = 9;
         static constexpr intg voigt_size = 3;
@@ -109,6 +118,22 @@ namespace feta::hybrid{
                         {0, 0, 0, 1.0},
                         {1, 1, 1, 1.0},
                         {3, 0, 1, 1.0}
+                }
+        };
+    };
+
+    template <>
+    struct FieldPolicy<2, FieldType::VECTOR_FINITE_STRAIN_CAST3M> {
+        static constexpr DerivationType derivation_type = DerivationType::FULL;
+        static constexpr intg field_size = 2;
+        static constexpr intg gradient_size = 9;
+        static constexpr intg voigt_size = 4;
+        static constexpr std::array<std::tuple<intg, intg, intg, real>, voigt_size> voigt_data = {
+                {
+                        {0, 0, 0, 1.0},
+                        {1, 1, 1, 1.0},
+                        {3, 0, 1, 1.0},
+                        {4, 1, 0, 1.0}
                 }
         };
     };
@@ -573,6 +598,78 @@ namespace feta::hybrid{
             return rhs;
         }
 
+//        EigMat<ck, ck> getGradientLHSInvert() const {
+//            const EigMat<2, 1> x_c = cell.getBarycenter();
+//            const EigMat<2, 1> bdc = cell.getBounds();
+//            EigMat<ck, ck> eye = EigMat<ck, ck>::Identity();
+//            EigMat<ck, ck> lhs = EigMat<ck, ck>::Zero();
+//            for (int i = 0; i < CellBuild::dim_q; ++i) {
+//                const EigMat<2, 1> x_q_c = cell.getQuadPoint(i);
+//                const real w_q_c = cell.getQuadWeight(i);
+//                const EigMat<ck, 1> phik = space.grad_basis.GetEvaluationVector(x_q_c, x_c, bdc);
+//                lhs += w_q_c * phik * phik.transpose();
+//            }
+//            EigMat<ck, ck> inv = lhs.llt().solve(eye);
+//            return inv;
+//        }
+
+        EigMat<ck, elem_size> getGradientFSRHS(intg di, intg dj) const {
+            EigMat<ck, elem_size> rhs = EigMat<ck, elem_size>::Zero();
+            // CELL GEOMETRY
+            const EigMat<2, 1> x_c = cell.getBarycenter();
+            const EigMat<2, 1> bdc = cell.getBounds();
+            EigMat<ck, cl> m_adv_j = EigMat<ck, cl>::Zero();
+//            EigMat<ck, cl> m_adv_i = EigMat<ck, cl>::Zero();
+            for (int i = 0; i < CellBuild::dim_q; ++i) {
+                const EigMat<2, 1> x_q_c = cell.getQuadPoint(i);
+                const real w_q_c = cell.getQuadWeight(i);
+                const EigMat<ck, 1> phik = space.grad_basis.GetEvaluationVector(x_q_c, x_c, bdc);
+//                const EigMat<cl, 1> phil_i = space.cell_basis.GetDerivativeVector(x_q_c, x_c, bdc, di);
+                const EigMat<cl, 1> phil_j = space.cell_basis.GetDerivativeVector(x_q_c, x_c, bdc, dj);
+                m_adv_j += w_q_c * phik * phil_j.transpose();
+//                m_adv_i += w_q_c * phik * phil_i.transpose();
+            }
+            rhs.template block<ck, cl>(0, di * cl) += m_adv_j;
+//            rhs.template block<ck, cl>(0, dj * cl) += 1./2. * m_adv_i;
+            for (int i = 0; i < num_nodes; ++i) {
+                FaceBuild face = faces[i];
+                const EigMat<2, 1> x_f = face.getBarycenter();
+                const EigMat<2, 1> bdf = face.getBounds();
+                const EigMat<2, 2> rot = face.getRotationMatrix();
+                const EigMat<1, 1> s_f = face.getBarycenterF();
+                const EigMat<1, 1> bdf_proj = face.getBoundsF();
+                const real dist = (rot * (x_f - x_c))(1);
+//                real normal_component_i;
+                real normal_component_j;
+                if (dist > 0) {
+//                    normal_component_i = rot(1, di);
+                    normal_component_j = rot(1, dj);
+                } else {
+//                    normal_component_i = -rot(1, di);
+                    normal_component_j = -rot(1, dj);
+                }
+                EigMat<ck, cl> m_trace_f = EigMat<ck, cl>::Zero();
+                EigMat<ck, fk> m_hyb_f = EigMat<ck, fk>::Zero();
+                for (int j = 0; j < FaceBuild::dim_q; ++j) {
+                    const EigMat<2, 1> x_q_f = face.getQuadPoint(j);
+                    const EigMat<1, 1> s_q_f = face.getQuadPointF(j);
+                    const real w_q_f = face.getQuadWeight(j);
+                    const EigMat<ck, 1> phi_k = space.grad_basis.GetEvaluationVector(x_q_f, x_c, bdc);
+                    const EigMat<cl, 1> phi_l = space.cell_basis.GetEvaluationVector(x_q_f, x_c, bdc);
+                    const EigMat<fk, 1> psi_k = space.face_basis.GetEvaluationVector(s_q_f, s_f, bdf_proj);
+                    m_trace_f += w_q_f * phi_k * phi_l.transpose();
+                    m_hyb_f += w_q_f * phi_k * psi_k.transpose();
+                }
+                int fstart_i = field_size * cl + i * field_size * fk + di * fk;
+//                int fstart_j = field_size * cl + i * field_size * fk + dj * fk;
+                rhs.template block<ck, cl>(0, di * cl) -= normal_component_j * m_trace_f;
+//                rhs.template block<ck, cl>(0, dj * cl) -= 1./2. * normal_component_i * m_trace_f;
+                rhs.template block<ck, fk>(0, fstart_i) += normal_component_j * m_hyb_f;
+//                rhs.template block<ck, fk>(0, fstart_j) += 1./2. * normal_component_i * m_hyb_f;
+            }
+            return rhs;
+        }
+
         std::vector<EigMat<grad_size, elem_size>> getGradientOperators() const {
             std::vector<EigMat<grad_size, elem_size>> gradient_operators;
             gradient_operators.reserve(CellCmpt::dim_q);
@@ -588,7 +685,14 @@ namespace feta::hybrid{
                     const intg di = std::get<1>(Field::voigt_data[j]);
                     const intg dj = std::get<2>(Field::voigt_data[j]);
                     const real coef = std::get<3>(Field::voigt_data[j]);
-                    const EigMat<ck, elem_size> rhs = getGradientRHS(di, dj);
+                    EigMat<ck, elem_size> rhs;
+                    if constexpr(Field::derivation_type == DerivationType::SYMMETRIC) {
+                        rhs = getGradientRHS(di, dj);
+                    }
+                    else {
+                        rhs = getGradientFSRHS(di, dj);
+                    }
+//                    const EigMat<ck, elem_size> rhs = getGradientRHS(di, dj);
                     const EigMat<ck, elem_size> grad_op = lhs_inv * rhs;
                     const EigMat<1, elem_size> line = phik.transpose() * grad_op;
 //                    line.template block<1, elem_size>(0, 0).print();

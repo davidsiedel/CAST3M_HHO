@@ -27,6 +27,19 @@ target_link_libraries(${PROJECT_NAME}Cast3MBindings
 # library containing a set of predefined elements
  
 mechhano_library(${PROJECT_NAME}Cast3MElements
-    castem_hho.cxx)
+		castem_hho.cxx
+#		castem_hho_generic.cxx
+#
+#		castem_hho_01.cxx
+#		castem_hho_11.cxx
+#		castem_hho_12.cxx
+#		castem_hho_21.cxx
+#
+#		castem_hho_22.cxx
+#		castem_hho_23.cxx
+#		castem_hho_32.cxx
+#		castem_hho_33.cxx
+#		castem_hho_43.cxx
+		)
 target_link_libraries(${PROJECT_NAME}Cast3MElements
 	PUBLIC ${PROJECT_NAME}Cast3MBindings-c)

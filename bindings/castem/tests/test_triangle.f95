@@ -60,7 +60,8 @@ subroutine test()
     !    ---------------------------------------------------------------------------------------------------------------
     !    INITIALIZE TEST DATA
     !    ---------------------------------------------------------------------------------------------------------------
-    character(len=255) :: l
+!    character(len=2000) :: l = "/home/dsiedel/temp/hho/cmake-build-debug/bindings/castem/src/libmechhcanoCast3MElements.so"
+    character(len=2000) :: l
     double precision stabilization_parameter
     double precision E
     double precision nu
