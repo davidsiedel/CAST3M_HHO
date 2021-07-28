@@ -98,8 +98,8 @@ subroutine test()
     !    ---------------------------------------------------------------------------------------------------------------
     ! call the library and build fotran objects
     call get_command_argument(1, l)
-    r = get_element_description(ed, TRIM(l), "hho_1_1_sp_poly05_get_element_description")
-    r = get_element_functions(ef, TRIM(l), "hho_1_1_sp_poly05_get_element_functions")
+    r = get_element_description(ed, TRIM(l), "hho_2_1_ft_poly05_get_element_description")
+    r = get_element_functions(ef, TRIM(l), "hho_2_1_ft_poly05_get_element_functions")
     r = get_generic_functions(gf, TRIM(l), "hho_get_generic_functions")
     ! print element geometry attributes
     write(*,*) "connectivity : ", eg % connectivity

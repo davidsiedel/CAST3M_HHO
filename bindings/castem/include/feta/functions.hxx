@@ -5,6 +5,8 @@
 #ifndef FETA_FUNCTIONS_HXX
 #define FETA_FUNCTIONS_HXX
 
+#define verbose false
+
 #include "Mechhano/Cast3M/Cast3MBindings.hxx"
 #include "feta/hybrid.hxx"
 
@@ -15,7 +17,7 @@ namespace feta::hybrid{
             int64_t index
     ) {
         try {
-            std::cout << "******** INVERTING MATRIX" << std::endl;
+            if (verbose) std::cout << "******** INVERTING MATRIX" << std::endl;
             Eigen::Matrix<real , Eigen::Dynamic, Eigen::Dynamic> mat(index, index);
             for (int i = 0; i < index; ++i) {
                 for (int j = 0; j < index; ++j) {
@@ -29,7 +31,7 @@ namespace feta::hybrid{
                     data[j + index * i] = inv(i, j);
                 }
             }
-            std::cout << "******** MATRIX INVERTED" << std::endl;
+            if (verbose) std::cout << "******** MATRIX INVERTED" << std::endl;
         } catch (...) {
             return castem_hho_handle_cxx_exception();
         }
@@ -40,9 +42,9 @@ namespace feta::hybrid{
             castem_hho_generic_functions *const gene_funs
     ){
         try {
-            std::cout << "******** INITIALIZING GENERIC FUNCTIONS" << std::endl;
+            if (verbose) std::cout << "******** INITIALIZING GENERIC FUNCTIONS" << std::endl;
             gene_funs->invert_matrix = invertMatrix;
-            std::cout << "******** GENERIC FUNCTIONS INITIALIZED" << std::endl;
+            if (verbose) std::cout << "******** GENERIC FUNCTIONS INITIALIZED" << std::endl;
         } catch (...) {
             return castem_hho_handle_cxx_exception();
         }
@@ -75,7 +77,7 @@ namespace feta::hybrid{
                 castem_hho_element_description *const d
         ){
             try {
-                std::cout << "******** INITIALIZING ELEMENT DESCRIPTION" << std::endl;
+                if (verbose) std::cout << "******** INITIALIZING ELEMENT DESCRIPTION" << std::endl;
 //                d->dim_eucli = Cas3MFunctions::dim_eucli;
                 d->dim_eucli = Cast3MElement::d;
                 d->num_vertices = Elem2<elem_t, k>::num_nodes;
@@ -98,7 +100,7 @@ namespace feta::hybrid{
                 d->dim_MKCC = d->dim_cell_block * d->dim_cell_block;
                 d->dim_MKCF = d->dim_cell_block * d->dim_face_block;
                 d->dim_MVC = d->dim_cell_block;
-                std::cout << "******** ELEMENT DESCRIPTION INITIALIZED" << std::endl;
+                if (verbose) std::cout << "******** ELEMENT DESCRIPTION INITIALIZED" << std::endl;
             } catch (...) {
                 return castem_hho_handle_cxx_exception();
             }
@@ -111,16 +113,16 @@ namespace feta::hybrid{
                 int64_t index
         ) {
             try {
-                std::cout << "******** GETTING GRADIENT OPERATOR AT GAUSS POINT : " << index << std::endl;
+                if (verbose) std::cout << "******** GETTING GRADIENT OPERATOR AT GAUSS POINT : " << index << std::endl;
                 // --- BUILDING THE ELEMENT
                 const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
 //                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
                 const EigMapIntC<2, Cast3MElement::num_nodes> ordening = EigMapIntC<2, Cast3MElement::num_nodes>(gd->connectivity);
 //                const EigMap<2, Cast3MElement::num_nodes> ordening = EigMap<2, Cast3MElement::num_nodes>(gd->connectivity);
-                std::cout << "- VERICES AS EXTRACTED :" << std::endl;
-                std::cout << verts << std::endl;
-                std::cout << "- CONNECTIVITY AS EXTRACTED :" << std::endl;
-                std::cout << ordening << std::endl;
+                if (verbose) std::cout << "- VERICES AS EXTRACTED :" << std::endl;
+                if (verbose) std::cout << verts << std::endl;
+                if (verbose) std::cout << "- CONNECTIVITY AS EXTRACTED :" << std::endl;
+                if (verbose) std::cout << ordening << std::endl;
                 Cast3MElement elem = Cast3MElement(verts, ordening);
                 // --- FILLING THE ELEMENT WORKSPACE FOR GRADIENTS
                 int effetcive_index = index - 1;
@@ -130,8 +132,8 @@ namespace feta::hybrid{
                         data[array_index] += elem.gradient_operators[effetcive_index](i, j);
                     }
                 }
-                std::cout << elem.gradient_operators[effetcive_index] << std::endl;
-                std::cout << "******** GRADIENT OPERATOR AT GAUSS POINT : " << index << " COMPUTED" << std::endl;
+                if (verbose) std::cout << elem.gradient_operators[effetcive_index] << std::endl;
+                if (verbose) std::cout << "******** GRADIENT OPERATOR AT GAUSS POINT : " << index << " COMPUTED" << std::endl;
             } catch (...) {
                 return castem_hho_handle_cxx_exception();
             }
@@ -143,16 +145,16 @@ namespace feta::hybrid{
                 double *const data // worksapce
         ) {
             try {
-                std::cout << "******** GETTING STABILIZATION OPERATOR" << std::endl;
+                if (verbose) std::cout << "******** GETTING STABILIZATION OPERATOR" << std::endl;
                 // --- BUILDING THE ELEMENT
                 const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
 //                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
                 const EigMapIntC<2, Cast3MElement::num_nodes> ordening = EigMapIntC<2, Cast3MElement::num_nodes>(gd->connectivity);
 //                const EigMap<2, Cast3MElement::num_nodes> ordening = EigMap<2, Cast3MElement::num_nodes>(gd->connectivity);
-                std::cout << "- VERICES AS EXTRACTED :" << std::endl;
-                std::cout << verts << std::endl;
-                std::cout << "- CONNECTIVITY AS EXTRACTED :" << std::endl;
-                std::cout << ordening << std::endl;
+                if (verbose) std::cout << "- VERICES AS EXTRACTED :" << std::endl;
+                if (verbose) std::cout << verts << std::endl;
+                if (verbose) std::cout << "- CONNECTIVITY AS EXTRACTED :" << std::endl;
+                if (verbose) std::cout << ordening << std::endl;
                 Cast3MElement elem = Cast3MElement(verts, ordening);
                 // --- FILLING THE ELEMENT WORKSPACE FOR GRADIENTS
                 for (int i = 0; i < elem_size; ++i) {
@@ -161,8 +163,8 @@ namespace feta::hybrid{
                         data[array_index] += elem.stabilization_operator(i, j);
                     }
                 }
-                std::cout << elem.stabilization_operator << std::endl;
-                std::cout << "******** STABILIZATION OPERATOR COMPUTED" << std::endl;
+                if (verbose) std::cout << elem.stabilization_operator << std::endl;
+                if (verbose) std::cout << "******** STABILIZATION OPERATOR COMPUTED" << std::endl;
             } catch (...) {
                 return castem_hho_handle_cxx_exception();
             }
@@ -175,7 +177,7 @@ namespace feta::hybrid{
                 int64_t index
         ) {
             try {
-                std::cout << "******** GETTING GAUSS WEIGHT : " << index << std::endl;
+                if (verbose) std::cout << "******** GETTING GAUSS WEIGHT : " << index << std::endl;
                 const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
 //                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
                 const EigMapIntC<2, Cast3MElement::num_nodes> ordening = EigMapIntC<2, Cast3MElement::num_nodes>(gd->connectivity);
@@ -196,7 +198,7 @@ namespace feta::hybrid{
                 int64_t index
         ) {
             try {
-                std::cout << "******** GETTING GAUSS POINT : " << index << std::endl;
+                if (verbose) std::cout << "******** GETTING GAUSS POINT : " << index << std::endl;
                 const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
 //                const EigMap<2, Cast3MElement::num_nodes> ordening = EigMap<2, Cast3MElement::num_nodes>(gd->connectivity);
 //                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
@@ -217,12 +219,12 @@ namespace feta::hybrid{
                 castem_hho_element_functions *const elem_funs
         ){
             try {
-                std::cout << "******** INITIALIZING ELEMENT FUNCTIONS" << std::endl;
+                if (verbose) std::cout << "******** INITIALIZING ELEMENT FUNCTIONS" << std::endl;
                 elem_funs->get_gradient_operator = get_gradient_operator;
                 elem_funs->get_stabilization_operator = get_stabilization_operator;
                 elem_funs->get_gauss_weight = get_gauss_weight;
                 elem_funs->get_gauss_point = get_gauss_point;
-                std::cout << "******** ELEMENT FUNCTIONS INITIALIZED" << std::endl;
+                if (verbose) std::cout << "******** ELEMENT FUNCTIONS INITIALIZED" << std::endl;
             } catch (...) {
                 return castem_hho_handle_cxx_exception();
             }
