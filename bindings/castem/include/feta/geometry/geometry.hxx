@@ -79,11 +79,11 @@ namespace feta::geometry{
         }
 
         EigMat<d, d> getRotationMatrix() const {
-//            if constexpr(d == 2) {
-            if (d == 2) {
+            if constexpr(d == 2) {
+//            if (d == 2) {
                 return getCurveRotationMatrix();
-//            } else if constexpr(d == 3) {
-            } else if (d == 3) {
+            } else if constexpr(d == 3) {
+//            } else if (d == 3) {
                 return getSurfaceRotationMatrix();
             }
         }
@@ -153,8 +153,8 @@ namespace feta::geometry{
 
     template<intg dim_eucli, intg n_nodes>
     void checkNodesConsistency(){
-//        if constexpr(n_nodes < dim_eucli) throw std::logic_error("unsufficient number fo nodes");
-        if (n_nodes < dim_eucli) throw std::logic_error("unsufficient number fo nodes");
+        if constexpr(n_nodes < dim_eucli) throw std::logic_error("unsufficient number fo nodes");
+//        if (n_nodes < dim_eucli) throw std::logic_error("unsufficient number fo nodes");
     }
 
 //    template<intg dim_eucli>
