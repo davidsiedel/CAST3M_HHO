@@ -88,7 +88,7 @@ subroutine test()
                                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
                                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, &
                                                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0/)
-    double precision, dimension(40) :: verts = (/     0., 1., 0., 0., 0., 1., 0., 0., 0., 0., &
+    double precision, dimension(40) :: verts = (/     48., 48., 0., 44., 60., 44., 0., 0., 0., 0., &
                                                         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., &
                                                         0., 0., 0., 0., 0., 0., 0., 0., 0., 0., &
                                                         0., 0., 0., 0., 0., 0., 0., 0., 0., 0./)
@@ -131,7 +131,7 @@ subroutine test()
     do iloop = 1, ed % num_quadrature_points
         write(*,*) "iloop : ", iloop
         r = get_gradient_operator(ef, eg, B_data, iloop) ! sorted row-wise
-!        write(*,*) "B_data : ", B_data
+        write(*,*) "B_data : ", B_data
         r = get_gauss_weight(ef, eg, gauss_weight_data, iloop)
         write(*,*) "gauss_weight_data : ", gauss_weight_data
         r = get_gauss_point(ef, eg, gauss_point_data, iloop)

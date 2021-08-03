@@ -129,7 +129,7 @@ namespace feta::hybrid{
                 for (int i = 0; i < grad_size; ++i) {
                     for (int j = 0; j < elem_size; ++j) {
                         int array_index = i * elem_size + j;
-                        data[array_index] += elem.gradient_operators[effetcive_index](i, j);
+                        data[array_index] = elem.gradient_operators[effetcive_index](i, j);
                     }
                 }
                 if (verbose) std::cout << elem.gradient_operators[effetcive_index] << std::endl;
@@ -160,7 +160,7 @@ namespace feta::hybrid{
                 for (int i = 0; i < elem_size; ++i) {
                     for (int j = 0; j < elem_size; ++j) {
                         int array_index = i * elem_size + j;
-                        data[array_index] += elem.stabilization_operator(i, j);
+                        data[array_index] = elem.stabilization_operator(i, j);
                     }
                 }
                 if (verbose) std::cout << elem.stabilization_operator << std::endl;
