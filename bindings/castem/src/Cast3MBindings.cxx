@@ -85,8 +85,8 @@ extern "C" {
       using fct_ptr = castem_hho_status (*)(castem_hho_element_functions *const
 //                                const castem_hho_element_geometry *const
                                 );
-      std::cout << l << std::endl;
-      std::cout << f << std::endl;
+//      std::cout << l << std::endl;
+//      std::cout << f << std::endl;
     #if (defined _WIN32 || defined _WIN64) && (!defined __CYGWIN__)
       const auto lib  = LoadLibrary(TEXT(l));
       if (lib == nullptr) {
@@ -116,8 +116,8 @@ extern "C" {
             const char *const l,
             const char *const f) {
         using fct_ptr = castem_hho_status (*)(castem_hho_element_description *const);
-        std::cout << l << std::endl;
-        std::cout << f << std::endl;
+//        std::cout << l << std::endl;
+//        std::cout << f << std::endl;
     #if (defined _WIN32 || defined _WIN64) && (!defined __CYGWIN__)
         const auto lib  = LoadLibrary(TEXT(l));
           if (lib == nullptr) {
@@ -147,8 +147,8 @@ extern "C" {
             const char *const f
             ) {
         using fct_ptr = castem_hho_status (*)(castem_hho_generic_functions *const);
-        std::cout << l << std::endl;
-        std::cout << f << std::endl;
+//        std::cout << l << std::endl;
+//        std::cout << f << std::endl;
     #if (defined _WIN32 || defined _WIN64) && (!defined __CYGWIN__)
         const auto lib  = LoadLibrary(TEXT(l));
               if (lib == nullptr) {
@@ -219,6 +219,19 @@ extern "C" {
                 elem_geom,
                 data,
                 index
+        );
+    }
+
+    castem_hho_status castem_hho_get_nodal_cell_displacement(
+            const castem_hho_element_functions *const elem_funs,
+            const castem_hho_element_geometry *const elem_geom,
+            double *const data, // worksapce
+            double *const cell_unknowns
+    ) {
+        return elem_funs->get_nodal_cell_displacement(
+                elem_geom,
+                data,
+                cell_unknowns
         );
     }
 

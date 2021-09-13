@@ -69,6 +69,8 @@ subroutine test()
     double precision, dimension (Z_max_size) :: Z_data
     double precision, dimension (3) :: gauss_point_data
     double precision, dimension (1) :: gauss_weight_data
+    double precision, dimension (6) :: cell_unknowns
+    double precision, dimension (6) :: cell_displacements
     integer(c_int64_t), parameter :: index = 1
     integer(c_int64_t) :: iloop = 1
     double precision, dimension (4) :: mat = (/ 0.5, 0.0, 0.0, 0.5/)
@@ -128,6 +130,9 @@ subroutine test()
     r = get_stabilization_operator(ef, eg, Z_data)
 !    write(*,*) "Z_data : ", Z_data ! sorted row-wise
     ! loop over indices of quadrature points
+    r = get_nodal_cell_displacement(ef, eg, cell_displacements, cell_unknowns) ! sorted row-wise
+    write(*,*) "cell_displacements : ", cell_displacements
+    write(*,*) "cell_unknowns : ", cell_unknowns
     do iloop = 1, ed % num_quadrature_points
         write(*,*) "iloop : ", iloop
         r = get_gradient_operator(ef, eg, B_data, iloop) ! sorted row-wise

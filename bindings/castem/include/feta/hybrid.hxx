@@ -385,7 +385,7 @@ namespace feta::hybrid{
                 for (int i = 0; i < num_nodes; ++i) {
                     FaceBuild face = faces[i];
                     const EigMat<2, 1> x_f = face.getBarycenter();
-                    const EigMat<2, 1> bdf = face.getBounds();
+//                    const EigMat<2, 1> bdf = face.getBounds();
                     const EigMat<2, 2> rot = face.getRotationMatrix();
                     const EigMat<1, 1> s_f = face.getBarycenterF();
                     const EigMat<1, 1> bdf_proj = face.getBoundsF();
@@ -466,9 +466,9 @@ namespace feta::hybrid{
             EigMat<cl, cr> prj_r2l_t2t = prj_cell_lhs.llt().template solve(prj_r2l_t2t_rhs);
             for (int f = 0; f < num_nodes; ++f) {
                 FaceBuild face = faces[f];
-                const EigMat<2, 1> x_f = face.getBarycenter();
-                const EigMat<2, 1> bdf = face.getBounds();
-                const EigMat<2, 2> rot = face.getRotationMatrix();
+//                const EigMat<2, 1> x_f = face.getBarycenter();
+//                const EigMat<2, 1> bdf = face.getBounds();
+//                const EigMat<2, 2> rot = face.getRotationMatrix();
                 const EigMat<1, 1> s_f = face.getBarycenterF();
                 const EigMat<1, 1> bdf_proj = face.getBoundsF();
                 EigMat<fk, fk> proj_face_lhs = EigMat<fk, fk>::Zero();
@@ -556,7 +556,7 @@ namespace feta::hybrid{
             for (int i = 0; i < num_nodes; ++i) {
                 FaceBuild face = faces[i];
                 const EigMat<2, 1> x_f = face.getBarycenter();
-                const EigMat<2, 1> bdf = face.getBounds();
+//                const EigMat<2, 1> bdf = face.getBounds();
                 const EigMat<2, 2> rot = face.getRotationMatrix();
                 const EigMat<1, 1> s_f = face.getBarycenterF();
                 const EigMat<1, 1> bdf_proj = face.getBoundsF();
@@ -635,7 +635,7 @@ namespace feta::hybrid{
             for (int i = 0; i < num_nodes; ++i) {
                 FaceBuild face = faces[i];
                 const EigMat<2, 1> x_f = face.getBarycenter();
-                const EigMat<2, 1> bdf = face.getBounds();
+//                const EigMat<2, 1> bdf = face.getBounds();
                 const EigMat<2, 2> rot = face.getRotationMatrix();
                 const EigMat<1, 1> s_f = face.getBarycenterF();
                 const EigMat<1, 1> bdf_proj = face.getBoundsF();
@@ -672,8 +672,8 @@ namespace feta::hybrid{
         }
 
         std::vector<EigMat<grad_size, elem_size>> getGradientOperators() const {
-            std::vector<EigMat<grad_size, elem_size>> gradient_operators;
-            gradient_operators.reserve(CellCmpt::dim_q);
+            std::vector<EigMat<grad_size, elem_size>> _gradient_operators;
+            _gradient_operators.reserve(CellCmpt::dim_q);
             const EigMat<2, 1> x_c = cell_cmpt.getBarycenter();
             const EigMat<2, 1> bdc = cell_cmpt.getBounds();
             const EigMat<ck, ck> lhs_inv = getGradientLHSInvert();
@@ -702,10 +702,10 @@ namespace feta::hybrid{
 //                    gradient_operator.template block<1, elem_size>(row, 0) = coef * line;
                     gradient_operator.row(row) = coef * line;
                 }
-                gradient_operators.push_back(gradient_operator);
+                _gradient_operators.push_back(gradient_operator);
 //                gradient_operator.print();
             }
-            return gradient_operators;
+            return _gradient_operators;
         }
 
 //        EigMat<ck, elem_size> getGradientComponent(intg di, intg dj) const {

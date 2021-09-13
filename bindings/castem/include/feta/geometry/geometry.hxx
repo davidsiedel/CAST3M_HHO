@@ -12,11 +12,11 @@
 namespace feta::geometry{
 
     struct Node{
-        Node(intg tag, const EigMat<3, 1> &vector, intg cell_weight, intg face_weight) :
-                tag(tag),
+        Node(intg _tag, const EigMat<3, 1> &vector, intg _cell_weight, intg _face_weight) :
+                tag(_tag),
                 coordinates(vector),
-                cell_weight(cell_weight),
-                face_weight(face_weight) {}
+                cell_weight(_cell_weight),
+                face_weight(_face_weight) {}
 
         const intg tag;
         const EigMat<3, 1> coordinates;
@@ -25,10 +25,10 @@ namespace feta::geometry{
     };
 
     struct QuadraturePoint{
-        QuadraturePoint(intg tag, const EigMat<3, 1> &vector, real weight) :
-                tag(tag),
+        QuadraturePoint(intg _tag, const EigMat<3, 1> &vector, real _weight) :
+                tag(_tag),
                 coordinates(vector),
-                weight(weight) {}
+                weight(_weight) {}
 
         template<intg dim>
         static QuadraturePoint fromVector(intg tag, const EigMat<dim, 1> &vector, real weight) {
@@ -68,7 +68,7 @@ namespace feta::geometry{
     template<intg d, intg n>
     struct Nodes{
 
-        explicit Nodes(EigMat<d, n> coordinates) : coordinates(coordinates) {}
+        explicit Nodes(EigMat<d, n> _coordinates) : coordinates(_coordinates) {}
 
         static constexpr intg dim = d;
         static constexpr intg num = n;

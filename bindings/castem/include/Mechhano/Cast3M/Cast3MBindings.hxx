@@ -91,6 +91,12 @@ extern "C" {
             int64_t // index
     );
 
+    typedef castem_hho_status (*get_nodal_cell_displacement_ptr)(
+            const castem_hho_element_geometry *const,
+            double *const, // data
+            double *const // unknowns
+    );
+
     typedef castem_hho_status (*castem_hho_invert_matrix_ptr)(
             double *const, // data
             int64_t // index
@@ -101,6 +107,7 @@ extern "C" {
         castem_hho_get_stabilization_operator_ptr get_stabilization_operator;
         castem_hho_get_gauss_weight_ptr get_gauss_weight;
         castem_hho_get_gauss_point_ptr get_gauss_point;
+        get_nodal_cell_displacement_ptr get_nodal_cell_displacement;
     };
 
     struct castem_hho_generic_functions {
@@ -152,6 +159,13 @@ extern "C" {
                                      const castem_hho_element_geometry *const,
                                      double *const, // data
                                      int64_t // index
+    );
+
+    MECHHANO_CASTEM_EXPORT castem_hho_status
+    castem_hho_get_nodal_cell_displacement(const castem_hho_element_functions *const,
+                                      const castem_hho_element_geometry *const,
+                                      double *const, // data
+                                      double *const // index
     );
 
     MECHHANO_CASTEM_EXPORT castem_hho_status

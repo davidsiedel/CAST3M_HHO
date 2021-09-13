@@ -39,6 +39,7 @@ module castem_hho
         type(c_funptr) get_stabilization_operator
         type(c_funptr) get_gauss_weight
         type(c_funptr) get_gauss_point
+        type(c_funptr) get_nodal_cell_displacement
     end type ElementFunctions
     !
     type, bind(c) :: GenericFunctions
@@ -249,6 +250,35 @@ contains
         type(ExitStatus) :: r
         r = get_gauss_point_wrapper(elem_funs, elem_geom, c_loc(data), index)
     end function get_gauss_point
+    ! ------------------------------------------------------------------------------------------------------------------
+    ! COMPUTE GAUSS POINT AT A SINGLE GAUSS POINT (INDEXED I)
+    ! ------------------------------------------------------------------------------------------------------------------
+    function get_nodal_cell_displacement(elem_funs, elem_geom, data, cell_unknowns) result(r)
+        use, intrinsic :: iso_c_binding, only: c_loc, c_int64_t
+        implicit none
+        interface
+            function get_nodal_cell_displacement_wrapper(elem_funs, elem_geom, data, cell_unknowns) &
+                    bind(c,name = 'castem_hho_get_nodal_cell_displacement') &
+                            result(r)
+                use, intrinsic :: iso_c_binding, only: c_ptr, c_int64_t
+                import ElementFunctions, ExitStatus, ElementGeometry
+                implicit none
+                type(ElementFunctions), intent(in) :: elem_funs
+                type(ElementGeometry), intent(in) :: elem_geom
+                type(c_ptr), intent(in), value :: data
+!                integer(c_int64_t), intent(in), value :: cell_unknowns
+                type(c_ptr), intent(in), value :: cell_unknowns
+                type(ExitStatus) :: r
+            end function get_nodal_cell_displacement_wrapper
+        end interface
+        type(ElementFunctions), intent(in) :: elem_funs
+        double precision, dimension (:), target :: data;
+        type(ElementGeometry), intent(in) :: elem_geom
+!        integer(c_int64_t), intent(in) :: cell_unknowns
+        double precision, dimension (:), target :: cell_unknowns
+        type(ExitStatus) :: r
+        r = get_nodal_cell_displacement_wrapper(elem_funs, elem_geom, c_loc(data), c_loc(cell_unknowns))
+    end function get_nodal_cell_displacement
     ! ------------------------------------------------------------------------------------------------------------------
     ! COMPUTE STABILIZATION OPERATOR
     ! ------------------------------------------------------------------------------------------------------------------

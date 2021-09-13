@@ -215,6 +215,82 @@ namespace feta::hybrid{
             return castem_hho_report_success();
         }
 
+        static castem_hho_status get_nodal_cell_displacement(
+                const castem_hho_element_geometry *const gd,
+                double *const data, // data
+                double *const unknowns // data
+        ) {
+            try {
+                if (verbose) std::cout << "******** GETTING NODAL DISPLACEMENT : " << std::endl;
+                const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
+//                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
+                const EigMapIntC<2, Cast3MElement::num_nodes> ordening = EigMapIntC<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMap<2, Cast3MElement::num_nodes> ordening = EigMap<2, Cast3MElement::num_nodes>(gd->connectivity);
+                const intg cell_field_dim = Cast3MElement::cl * Cast3MElement::field_size;
+                const intg nodal_displacement_dim = Cast3MElement::num_nodes * Cast3MElement::field_size;
+                if (verbose) std::cout << "******** cell_field_dim : " << cell_field_dim << std::endl;
+                const EigMapC<cell_field_dim, 1> Uvect(unknowns);
+                Cast3MElement elem = Cast3MElement(verts, ordening);
+                auto c = elem.cell.getBarycenter();
+                auto b = elem.cell.getBounds();
+                using Interpolator = EigMat<nodal_displacement_dim, cell_field_dim>;
+                Interpolator displacement_interpolation_operator = Interpolator::Zero();
+                for (int i = 0; i < Cast3MElement::num_nodes; ++i) {
+                    EigMat<Cast3MElement::cl, 1> vectt = elem.space.cell_basis.GetEvaluationVector(verts.col(i), c, b);
+                    for (int j = 0; j < Cast3MElement::field_size; ++j) {
+                        int rowpos = i + j * Cast3MElement::field_size;
+                        int colpos = j * Cast3MElement::cl;
+                        displacement_interpolation_operator.template block<1, Cast3MElement::cl>(rowpos, colpos) = vectt;
+                    }
+                }
+                EigMat<Cast3MElement::num_nodes * Cast3MElement::field_size, 1> Dvect = displacement_interpolation_operator * Uvect;
+                for (int i = 0; i < Cast3MElement::num_nodes * Cast3MElement::field_size; ++i) {
+                    data[i] = Dvect(i);
+                }
+            } catch (...) {
+                return castem_hho_handle_cxx_exception();
+            }
+            return castem_hho_report_success();
+        }
+
+        static castem_hho_status get_nodal_faces_displacement(
+                const castem_hho_element_geometry *const gd,
+                double *const data, // data
+                double *const unknowns // data
+        ) {
+            try {
+                if (verbose) std::cout << "******** GETTING NODAL DISPLACEMENT : " << std::endl;
+                const EigMap<2, Cast3MElement::num_nodes> verts = EigMap<2, Cast3MElement::num_nodes>(gd->vertices_coordinates);
+//                const EigMapIntR<2, Cast3MElement::num_nodes> ordening = EigMapIntR<2, Cast3MElement::num_nodes>(gd->connectivity);
+                const EigMapIntC<2, Cast3MElement::num_nodes> ordening = EigMapIntC<2, Cast3MElement::num_nodes>(gd->connectivity);
+//                const EigMap<2, Cast3MElement::num_nodes> ordening = EigMap<2, Cast3MElement::num_nodes>(gd->connectivity);
+                const intg cell_field_dim = Cast3MElement::cl * Cast3MElement::field_size;
+                const intg nodal_displacement_dim = Cast3MElement::num_nodes * Cast3MElement::field_size;
+                if (verbose) std::cout << "******** cell_field_dim : " << cell_field_dim << std::endl;
+                const EigMapC<cell_field_dim, 1> Uvect(unknowns);
+                Cast3MElement elem = Cast3MElement(verts, ordening);
+                auto c = elem.cell.getBarycenter();
+                auto b = elem.cell.getBounds();
+                using Interpolator = EigMat<nodal_displacement_dim, cell_field_dim>;
+                Interpolator displacement_interpolation_operator = Interpolator::Zero();
+                for (int i = 0; i < Cast3MElement::num_nodes; ++i) {
+                    EigMat<Cast3MElement::cl, 1> vectt = elem.space.cell_basis.GetEvaluationVector(verts.col(i), c, b);
+                    for (int j = 0; j < Cast3MElement::field_size; ++j) {
+                        int rowpos = i + j * Cast3MElement::field_size;
+                        int colpos = j * Cast3MElement::cl;
+                        displacement_interpolation_operator.template block<1, Cast3MElement::cl>(rowpos, colpos) = vectt;
+                    }
+                }
+                EigMat<Cast3MElement::num_nodes * Cast3MElement::field_size, 1> Dvect = displacement_interpolation_operator * Uvect;
+                for (int i = 0; i < Cast3MElement::num_nodes * Cast3MElement::field_size; ++i) {
+                    data[i] = Dvect(i);
+                }
+            } catch (...) {
+                return castem_hho_handle_cxx_exception();
+            }
+            return castem_hho_report_success();
+        }
+
         static castem_hho_status getFunctions(
                 castem_hho_element_functions *const elem_funs
         ){
@@ -224,6 +300,7 @@ namespace feta::hybrid{
                 elem_funs->get_stabilization_operator = get_stabilization_operator;
                 elem_funs->get_gauss_weight = get_gauss_weight;
                 elem_funs->get_gauss_point = get_gauss_point;
+                elem_funs->get_nodal_cell_displacement = get_nodal_cell_displacement;
                 if (verbose) std::cout << "******** ELEMENT FUNCTIONS INITIALIZED" << std::endl;
             } catch (...) {
                 return castem_hho_handle_cxx_exception();
