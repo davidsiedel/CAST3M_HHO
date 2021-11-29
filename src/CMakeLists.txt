@@ -1,3 +1,5 @@
+include(${CMAKE_SOURCE_DIR}/cmake/modules/mechhano.cmake)
+
 mechhano_library(${PROJECT_NAME}
   mechhano.cxx)
 target_include_directories(${PROJECT_NAME}
