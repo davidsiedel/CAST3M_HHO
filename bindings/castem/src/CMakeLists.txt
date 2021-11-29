@@ -1,5 +1,7 @@
 # C library containing the basis of Cast3M bindings
 
+include(${CMAKE_SOURCE_DIR}/cmake/modules/mechhano.cmake)
+
 mechhano_library(${PROJECT_NAME}Cast3MBindings-c
         Cast3MBindings.cxx)
 target_include_directories(${PROJECT_NAME}Cast3MBindings-c
